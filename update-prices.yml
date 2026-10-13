@@ -1,0 +1,40 @@
+name: Cập nhật giá bạc
+
+on:
+  schedule:
+    # Mỗi 30 phút, từ 07:00 đến 22:30 giờ Việt Nam (00:00–15:30 UTC)
+    - cron: "*/30 0-15 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Lấy giá mới
+        run: python scripts/update_prices.py
+
+      - name: Lưu vào repo nếu giá thay đổi
+        if: always()
+        run: |
+          if git diff --quiet -- data/market.json; then
+            echo "Không có thay đổi."; exit 0
+          fi
+          git config user.name "silver-tracker-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market.json
+          git commit -m "Cập nhật giá bạc $(TZ=Asia/Ho_Chi_Minh date '+%H:%M %d/%m/%Y')"
+          git push
