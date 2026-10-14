@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-10-14T09:58:13Z",
+ "fetchedAt": "2026-10-14T10:26:08Z",
  "history": [
   {
    "at": "2026-10-05T18:27:00+07:00",
@@ -115,32 +115,37 @@
    "at": "2026-10-14T16:45:00+07:00",
    "buy": 2042000,
    "sell": 2105000
+  },
+  {
+   "at": "2026-10-14T17:13:00+07:00",
+   "buy": 2043000,
+   "sell": 2106000
   }
  ],
  "items": [
   {
    "type": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2042000,
-   "sell": 2105000
+   "buy": 2043000,
+   "sell": 2106000
   },
   {
    "type": "BẠC THỎI PHÚ QUÝ 999 10 LƯỢNG, 5 LƯỢNG",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2042000,
-   "sell": 2105000
+   "buy": 2043000,
+   "sell": 2106000
   },
   {
    "type": "ĐỒNG BẠC MỸ NGHỆ PHÚ QUÝ 999",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2042000,
-   "sell": 2402000
+   "buy": 2043000,
+   "sell": 2404000
   },
   {
    "type": "BẠC THỎI PHÚ QUÝ 999 1KILO",
    "unit": "VNĐ/KG",
-   "buy": 54453197,
-   "sell": 56133193
+   "buy": 54479864,
+   "sell": 56159860
   },
   {
    "type": "BẠC 999 (MIẾNG - THANH - THỎI)",
@@ -149,21 +154,21 @@
    "sell": null
   }
  ],
- "itemsAsOf": "2026-10-14T16:45:00+07:00",
- "priceAsOf": "2026-10-14T16:45:00+07:00",
+ "itemsAsOf": "2026-10-14T17:13:00+07:00",
+ "priceAsOf": "2026-10-14T17:13:00+07:00",
  "source": "phuquy",
  "target": {
   "name": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
-  "buy": 2042000,
-  "sell": 2105000
+  "buy": 2043000,
+  "sell": 2106000
  },
  "world": {
-  "usdPerOz": 58.46,
-  "changePct": -0.99,
-  "asOf": "2026-10-14T05:57:00-04:00",
+  "usdPerOz": 58.45,
+  "changePct": -1.02,
+  "asOf": "2026-10-14T06:25:00-04:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 49019048,
-  "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.080 ₫/USD), trước thuế và phí nhập khẩu"
+  "vndPerKg": 49031965,
+  "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.090 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
   {
@@ -589,6 +594,10 @@
   {
    "at": "2026-10-14T05:57:00-04:00",
    "usd": 58.46
+  },
+  {
+   "at": "2026-10-14T06:25:00-04:00",
+   "usd": 58.45
   }
  ],
  "errors": []
