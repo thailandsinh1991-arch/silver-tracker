@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-10-14T01:07:39Z",
+ "fetchedAt": "2026-10-14T01:53:51Z",
  "history": [
   {
    "at": "2026-10-05T18:27:00+07:00",
@@ -45,54 +45,59 @@
    "at": "2026-10-13T18:28:00+07:00",
    "buy": 2093000,
    "sell": 2158000
+  },
+  {
+   "at": "2026-10-14T08:52:00+07:00",
+   "buy": 2052000,
+   "sell": 2115000
   }
  ],
  "items": [
   {
    "type": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2093000,
-   "sell": 2158000
+   "buy": 2052000,
+   "sell": 2115000
   },
   {
    "type": "BẠC THỎI PHÚ QUÝ 999 10 LƯỢNG, 5 LƯỢNG",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2093000,
-   "sell": 2158000
+   "buy": 2052000,
+   "sell": 2115000
   },
   {
    "type": "ĐỒNG BẠC MỸ NGHỆ PHÚ QUÝ 999",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2093000,
-   "sell": 2462000
+   "buy": 2052000,
+   "sell": 2414000
   },
   {
    "type": "BẠC THỎI PHÚ QUÝ 999 1KILO",
    "unit": "VNĐ/KG",
-   "buy": 55813194,
-   "sell": 57546523
+   "buy": 54719863,
+   "sell": 56399859
   },
   {
    "type": "BẠC 999 (MIẾNG - THANH - THỎI)",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 1977150,
+   "buy": 1957200,
    "sell": null
   }
  ],
- "itemsAsOf": "2026-10-13T18:28:00+07:00",
- "priceAsOf": "2026-10-13T18:28:00+07:00",
+ "itemsAsOf": "2026-10-14T08:52:00+07:00",
+ "priceAsOf": "2026-10-14T08:52:00+07:00",
  "source": "phuquy",
  "target": {
   "name": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
-  "buy": 2093000,
-  "sell": 2158000
+  "buy": 2052000,
+  "sell": 2115000
  },
  "world": {
-  "usdPerOz": 58.94,
-  "changePct": -0.19,
-  "asOf": "2026-10-13T21:07:00-04:00",
+  "usdPerOz": 58.76,
+  "changePct": -0.48,
+  "asOf": "2026-10-13T21:53:00-04:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 49461936,
+  "vndPerKg": 49306707,
   "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.100 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
@@ -463,6 +468,10 @@
   {
    "at": "2026-10-13T21:07:00-04:00",
    "usd": 58.94
+  },
+  {
+   "at": "2026-10-13T21:53:00-04:00",
+   "usd": 58.76
   }
  ],
  "errors": []
