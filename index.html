@@ -81,6 +81,10 @@ h2.page { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -.
 .up { color: var(--up); } .down { color: var(--down); } .warn { color: var(--warn); }
 
 /* status line */
+.hdr-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.acct { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); font-size: 11.5px; font-weight: 600; color: inherit; }
+.acct.on { padding: 0; width: 30px; justify-content: center; background: var(--accent); color: var(--accent-ink); border-color: transparent; font-size: 13px; }
+.acct img { width: 30px; height: 30px; border-radius: 50%; display: block; }
 .status { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
 .dot.ok { background: var(--up); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--down); }
@@ -231,7 +235,7 @@ td .pname { font-weight: 600; font-size: 12px; }
       <div class="brand-mark" aria-hidden="true">Ag</div>
       <div><h1>Silver Tracker</h1><small>Bạc Phú Quý · danh mục cá nhân</small></div>
     </div>
-    <div class="status" id="hdr-status"></div>
+    <div class="hdr-right"><div class="status" id="hdr-status"></div><button class="acct" id="hdr-acct" data-action="account" hidden></button></div>
   </header>
 
   <nav class="tabs" role="tablist" aria-label="Màn hình">
@@ -256,6 +260,7 @@ td .pname { font-weight: 600; font-size: 12px; }
 <div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"></div></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
+<script src="firebase-config.js"></script>
 <script>
 "use strict";
 /* ---------- constants & formatting ---------- */
@@ -401,6 +406,8 @@ const state = {
   profile: { alerts: [], history: [] }, profileLoaded: false,
   filter: "all",
   downloads: null,
+  cloud: "off",             // off | loading | signedout | signedin
+  user: null,
 };
 let db = null, userNs = null;
 let unsubTx = null, unsubMarket = null, unsubProfile = null;
@@ -448,6 +455,16 @@ function marketStatusLine(compact) {
 
 function renderHeader() {
   $("#hdr-status").innerHTML = state.boot === "nodb" ? `<span class="dot bad"></span><span class="muted">Chưa kết nối dữ liệu</span>` : marketStatusLine(true);
+  const b = $("#hdr-acct");
+  b.hidden = state.cloud === "off" || state.cloud === "loading";
+  if (state.cloud === "signedin" && state.user) {
+    const u = state.user, name = u.displayName || u.email || "?";
+    b.className = "acct on"; b.title = `Đã đồng bộ · ${u.email || name}`; b.setAttribute("aria-label", b.title);
+    b.innerHTML = u.photoURL ? `<img src="${esc(u.photoURL)}" alt="" referrerpolicy="no-referrer">` : esc(name.trim().charAt(0).toUpperCase());
+  } else {
+    b.className = "acct"; b.title = "Đăng nhập Google để đồng bộ giao dịch"; b.setAttribute("aria-label", b.title);
+    b.textContent = "Đăng nhập";
+  }
 }
 
 function sparkline(history, field = "buy", fmtV = fmtInt, unit = " ₫", label = "giá thu mua") {
@@ -559,6 +576,9 @@ function renderPortfolio() {
     ${s.grams > 0 && s.unpriced ? `<p class="tiny warn" style="margin:12px 0 0">Một số thương hiệu chưa có giá thu mua; giá trị và P/L chưa đầy đủ.</p>` : ""}
   </div>`;
 
+  if (state.cloud === "signedout") {
+    html += `<div class="notice info">${I.info}<div class="grow"><b>Đăng nhập Google để đồng bộ.</b> Giao dịch sẽ tự tải lại trên mọi máy đăng nhập cùng tài khoản, không phải nhập lại tệp JSON.</div><button class="btn primary" data-action="signin">Đăng nhập</button></div>`;
+  }
   if (state.txStatus === "ready" && state.tx.some((e) => txInfo(e).missingBrand)) {
     html += `<div class="notice warn">${I.info}<div class="grow">Giao dịch cũ chưa lưu thương hiệu. Giá trị đang tham chiếu giá thu mua Phú Quý; chạm vào giao dịch để chọn thương hiệu chính xác.</div></div>`;
   }
@@ -606,7 +626,9 @@ function renderPortfolio() {
   if (state.txStatus === "ready") {
     html += `<div class="btn-row"><button class="btn ghost" data-action="import">${I.upload}Nhập từ app cũ</button>${state.downloads && state.tx.length ? `<button class="btn ghost" data-action="export">${I.download}Sao lưu JSON</button>` : ""}</div>`;
   }
-  html += `<p class="foot">Giá trị hiện tại dùng giá thu mua Phú Quý (mua vào), không dùng giá bán ra. Giá vốn mua có phí; phí bán được trừ khỏi tiền thu. Giá vốn tính theo bình quân gia quyền theo từng thương hiệu.</p><p class="foot"><b>Giao dịch và cảnh báo chỉ lưu trong trình duyệt này</b>, không gửi lên mạng và không đồng bộ sang máy khác. Hãy bấm “Sao lưu JSON” định kỳ; khi đổi máy, dùng “Nhập từ app cũ” để nạp lại tệp sao lưu.</p></div>`;
+  html += `<p class="foot">Giá trị hiện tại dùng giá thu mua Phú Quý (mua vào), không dùng giá bán ra. Giá vốn mua có phí; phí bán được trừ khỏi tiền thu. Giá vốn tính theo bình quân gia quyền theo từng thương hiệu.</p>${state.cloud === "signedin"
+    ? `<p class="foot"><b>Đang đồng bộ theo tài khoản ${esc(state.user?.email || "Google")}.</b> Giao dịch và cảnh báo tự tải lại trên mọi máy đăng nhập cùng tài khoản; chỉ bạn đọc được dữ liệu này.</p>`
+    : `<p class="foot"><b>Giao dịch và cảnh báo đang lưu trong trình duyệt này</b>, chưa đồng bộ sang máy khác.${state.cloud === "signedout" ? " Đăng nhập Google để tự đồng bộ." : " Hãy bấm “Sao lưu JSON” định kỳ; khi đổi máy, dùng “Nhập từ app cũ” để nạp lại tệp sao lưu."}</p>`}</div>`;
   el.innerHTML = html;
 }
 
@@ -1067,14 +1089,14 @@ function localDoc(path) {
   return {
     async set(data) { const s = lsRead(); s[path] = JSON.parse(JSON.stringify(data)); lsWrite(s); lsNotify(); },
     async delete() { const s = lsRead(); delete s[path]; lsWrite(s); lsNotify(); },
-    onSnapshot(cb) { const fn = () => cb(snapDoc(path.split("/").pop(), lsRead()[path])); lsListeners.add(fn); fn(); return () => lsListeners.delete(fn); },
+    onSnapshot(cb, _err) { const fn = () => cb(snapDoc(path.split("/").pop(), lsRead()[path])); lsListeners.add(fn); fn(); return () => lsListeners.delete(fn); },
     collection(name) { return localCollection(`${path}/${name}`); },
   };
 }
 function localCollection(path) {
   return {
     doc(id) { return localDoc(`${path}/${id || newId()}`); },
-    onSnapshot(cb) {
+    onSnapshot(cb, _err) {
       const fn = () => {
         const s = lsRead(), pre = path + "/";
         const docs = Object.keys(s).filter((k) => k.startsWith(pre) && !k.slice(pre.length).includes("/")).map((k) => snapDoc(k.slice(pre.length), s[k]));
@@ -1084,7 +1106,8 @@ function localCollection(path) {
     },
   };
 }
-db = { doc: localDoc };
+const localDb = { doc: localDoc };
+db = localDb;
 const profileRef = () => db.doc(`data/users/${state.uid}/profile`);
 const txCollection = () => profileRef().collection("tx");
 
@@ -1095,7 +1118,7 @@ function subscribeTx() {
     unsubTx = txCollection().onSnapshot((snap) => {
       state.tx = snap.docs.filter((d) => d.exists).map((d) => ({ _id: d.id, ...d.data() }));
       state.txStatus = "ready"; render();
-    });
+    }, () => { state.txStatus = "error"; render(); });
   } catch { state.txStatus = "error"; render(); }
 }
 
@@ -1125,7 +1148,7 @@ function subscribeProfile() {
     state.profile = { alerts: Array.isArray(d.alerts) ? d.alerts : [], history: Array.isArray(d.history) ? d.history : [], lastEvaluatedKey: d.lastEvaluatedKey || null };
     state.profileLoaded = true;
     maybeEvaluateAlerts(); render();
-  });
+  }, () => { state.profileLoaded = true; render(); });
 }
 
 const localDownloads = {
@@ -1137,17 +1160,141 @@ const localDownloads = {
   },
 };
 
+/* ---------- đồng bộ theo tài khoản Google (Firebase) ----------
+   Bật khi repo có tệp firebase-config.js. Không có tệp → chạy như cũ (lưu trong trình duyệt). */
+const FB_VER = "10.12.2";
+const fbConfig = () => {
+  try { if (typeof firebaseConfig !== "undefined" && firebaseConfig?.apiKey) return firebaseConfig; } catch {}
+  return window.FIREBASE_CONFIG?.apiKey ? window.FIREBASE_CONFIG : null;
+};
+const loadScript = (src) => new Promise((ok, bad) => {
+  const el = document.createElement("script"); el.src = src; el.onload = ok; el.onerror = () => bad(new Error(src));
+  document.head.appendChild(el);
+});
+const settle = (p, ms = 2500) => {
+  // Firestore ghi vào máy ngay rồi gửi lên sau; khi mất mạng thì không chờ server trả lời.
+  p.catch((e) => toast(writeErrorText(e)));
+  return Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
+};
+const wrapSnap = (s) => ({ id: s.id, exists: s.exists, data: () => s.data() });
+function cloudDoc(ref) {
+  return {
+    set: (data) => settle(ref.set(JSON.parse(JSON.stringify(data)))),
+    delete: () => settle(ref.delete()),
+    onSnapshot: (cb, err) => ref.onSnapshot((s) => cb(wrapSnap(s)), err),
+    collection: (name) => cloudCollection(ref.collection(name)),
+  };
+}
+function cloudCollection(ref) {
+  return {
+    doc: (id) => cloudDoc(id ? ref.doc(id) : ref.doc()),
+    onSnapshot: (cb, err) => ref.onSnapshot((s) => cb({ docs: s.docs.map(wrapSnap) }), err),
+  };
+}
+
+function startData() {
+  render();
+  subscribeTx();
+  subscribeProfile();
+}
+function useLocal() {
+  db = localDb; state.uid = "local"; state.user = null;
+  startData();
+}
+async function useCloud(user) {
+  const fs = firebase.firestore();
+  db = { doc: (p) => cloudDoc(fs.doc(p)) };
+  state.uid = user.uid; state.user = { email: user.email, displayName: user.displayName, photoURL: user.photoURL };
+  const moved = await migrateLocal(fs, user.uid);
+  startData();
+  return moved;
+}
+// Lần đầu đăng nhập: tài khoản chưa có giao dịch → tự chuyển giao dịch đang có trong máy lên.
+async function migrateLocal(fs, uid) {
+  const s = lsRead(), pre = "data/users/local/profile/tx/";
+  const local = Object.keys(s).filter((k) => k.startsWith(pre) && !k.slice(pre.length).includes("/"));
+  const localProfile = s["data/users/local/profile"];
+  if (!local.length && !localProfile?.alerts?.length) return 0;
+  try {
+    const base = fs.doc(`data/users/${uid}/profile`);
+    const [txSnap, profSnap] = await Promise.all([base.collection("tx").limit(1).get(), base.get()]);
+    let moved = 0;
+    if (txSnap.empty && local.length) {
+      for (let i = 0; i < local.length; i += 400) {
+        const batch = fs.batch();
+        for (const k of local.slice(i, i + 400)) { batch.set(base.collection("tx").doc(k.slice(pre.length)), JSON.parse(JSON.stringify(s[k]))); moved++; }
+        await batch.commit();
+      }
+    }
+    if (!profSnap.exists && localProfile?.alerts?.length) await base.set(JSON.parse(JSON.stringify(localProfile)));
+    return moved;
+  } catch { toast("Chưa chuyển được giao dịch trong máy lên tài khoản. Có thể dùng “Nhập từ app cũ”."); return -1; }
+}
+
+async function signIn() {
+  if (!window.firebase?.auth) { toast("Chưa tải được đăng nhập. Kiểm tra mạng rồi thử lại."); return; }
+  const auth = firebase.auth(), provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  try { await auth.signInWithPopup(provider); }
+  catch (e) {
+    const c = e?.code || "";
+    if (c === "auth/popup-blocked" || c === "auth/operation-not-supported-in-this-environment" || c === "auth/web-storage-unsupported") {
+      try { await auth.signInWithRedirect(provider); return; } catch (e2) { e = e2; }
+    }
+    if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return;
+    if (c === "auth/unauthorized-domain") toast("Tên miền chưa được cho phép trong Firebase (Authentication → Settings → Authorized domains).");
+    else toast("Chưa đăng nhập được. Thử lại sau.");
+  }
+}
+function accountSheet() {
+  const u = state.user || {};
+  openSheet(`<h3 id="sheet-title">Tài khoản đồng bộ</h3>
+    <p class="small muted" style="margin:6px 0 0">Đang đăng nhập: <b>${esc(u.email || u.displayName || "")}</b>. Giao dịch và cảnh báo tự đồng bộ trên mọi máy đăng nhập cùng tài khoản.</p>
+    <p class="small muted" style="margin:6px 0 0">Đăng xuất chỉ ngắt đồng bộ trên máy này, dữ liệu trên tài khoản vẫn còn nguyên.</p>
+    <div class="actions"><button class="btn" data-action="close">Đóng</button><button class="btn danger" data-action="signout">Đăng xuất</button></div>`, "[data-action=close]");
+}
+
+async function startCloud(cfg) {
+  state.cloud = "loading"; render();
+  try {
+    for (const m of ["app", "auth", "firestore"]) await loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`);
+    firebase.initializeApp(cfg);
+    const fs = firebase.firestore();
+    try { fs.settings({ ignoreUndefinedProperties: true, merge: true }); } catch {}
+    try { await fs.enablePersistence({ synchronizeTabs: true }); } catch {}
+    firebase.auth().getRedirectResult().catch(() => {});
+  } catch {
+    state.cloud = "off"; useLocal(); toast("Không tải được đồng bộ, đang dùng dữ liệu trong máy."); return;
+  }
+  let first = true;
+  firebase.auth().onAuthStateChanged(async (user) => {
+    const was = state.uid;
+    if (user) {
+      if (was === user.uid) return;
+      state.cloud = "signedin"; state.txStatus = "loading"; state.profileLoaded = false;
+      const moved = await useCloud(user);
+      if (moved > 0) toast(`Đã đăng nhập và chuyển ${moved} giao dịch từ máy này lên tài khoản`);
+      else if (!first && moved === 0) toast(`Đã đăng nhập · ${user.email || ""}`);
+    } else {
+      state.cloud = "signedout";
+      if (was !== "local") useLocal(); else render();
+      if (!first && was && was !== "local") toast("Đã đăng xuất. Dữ liệu trên tài khoản vẫn còn.");
+    }
+    first = false;
+  });
+}
+
 async function boot() {
   try { const saved = localStorage.getItem("st-tab"); if (["market", "portfolio", "alerts"].includes(saved)) state.tab = saved; } catch {}
   if (location.hash === "#danh-muc") state.tab = "portfolio";
   if (location.hash === "#canh-bao") state.tab = "alerts";
   state.boot = "ready";
   state.downloads = localDownloads;
-  state.uid = "local"; state.canEditMarket = false;
-  render();
+  state.canEditMarket = false;
   subscribeMarket();
-  subscribeTx();
-  subscribeProfile();
+  const cfg = location.protocol.startsWith("http") ? fbConfig() : null;
+  if (cfg) startCloud(cfg);
+  else useLocal();
 }
 
 /* ---------- events ---------- */
@@ -1174,6 +1321,9 @@ document.addEventListener("click", (e) => {
   else if (a === "import") importForm();
   else if (a === "export") exportJson();
   else if (a === "retry-tx") subscribeTx();
+  else if (a === "signin") signIn();
+  else if (a === "account") { if (state.cloud === "signedin") accountSheet(); else signIn(); }
+  else if (a === "signout") { closeSheet(); firebase.auth().signOut().catch(() => {}); }
   else if (a === "add-alert") alertForm(null);
   else if (a === "alert-breakeven") alertForm({ kind: "buy_above", threshold: Math.round(calculatePortfolio(state.tx, buyback()).avgPerLuong) });
   else if (a === "ask-delete") { const id = $("#tx-form")?.dataset.id; const entry = state.tx.find((x) => x._id === id); if (entry) askDelete(entry); }
