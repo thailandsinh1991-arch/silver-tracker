@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-10-14T02:17:27Z",
+ "fetchedAt": "2026-10-14T02:54:38Z",
  "history": [
   {
    "at": "2026-10-05T18:27:00+07:00",
@@ -55,6 +55,11 @@
    "at": "2026-10-14T09:14:00+07:00",
    "buy": 2056000,
    "sell": 2120000
+  },
+  {
+   "at": "2026-10-14T09:52:00+07:00",
+   "buy": 2056000,
+   "sell": 2120000
   }
  ],
  "items": [
@@ -89,8 +94,8 @@
    "sell": null
   }
  ],
- "itemsAsOf": "2026-10-14T09:14:00+07:00",
- "priceAsOf": "2026-10-14T09:14:00+07:00",
+ "itemsAsOf": "2026-10-14T09:52:00+07:00",
+ "priceAsOf": "2026-10-14T09:52:00+07:00",
  "source": "phuquy",
  "target": {
   "name": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
@@ -98,12 +103,12 @@
   "sell": 2120000
  },
  "world": {
-  "usdPerOz": 59.02,
-  "changePct": -0.06,
-  "asOf": "2026-10-13T22:16:00-04:00",
+  "usdPerOz": 59.11,
+  "changePct": 0.1,
+  "asOf": "2026-10-13T22:54:00-04:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 49526554,
-  "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.100 ₫/USD), trước thuế và phí nhập khẩu"
+  "vndPerKg": 49560721,
+  "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.080 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
   {
@@ -481,6 +486,10 @@
   {
    "at": "2026-10-13T22:16:00-04:00",
    "usd": 59.02
+  },
+  {
+   "at": "2026-10-13T22:54:00-04:00",
+   "usd": 59.11
   }
  ],
  "errors": []
