@@ -21,7 +21,10 @@ TARGET = "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG"
 OZ_PER_KG = 32.1507466
 VN = timezone(timedelta(hours=7))
 NY = ZoneInfo("America/New_York")
-KEEP = 240
+KEEP = 240  # market.json chỉ giữ 240 điểm gần nhất cho biểu đồ nhỏ; bản đầy đủ nằm trong archive/
+ARCHIVE = DATA.parent.parent / "archive"
+PQ_CSV = ARCHIVE / "gia-phu-quy.csv"
+WORLD_CSV = ARCHIVE / "gia-the-gioi.csv"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
 
@@ -194,6 +197,30 @@ def parse_kitco(page):
     return bid, pct, as_of
 
 
+def csv_append(path, header, rows):
+    """Ghi thêm dòng vào sổ lưu trữ vĩnh viễn. Không bao giờ xoá hay sửa dòng cũ."""
+    import csv
+    path.parent.mkdir(parents=True, exist_ok=True)
+    new = not path.exists()
+    with path.open("a", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        if new:
+            w.writerow(header)
+        w.writerows(rows)
+
+
+def csv_last_key(path, ncols):
+    """Khoá (các cột đầu) của dòng cuối cùng, để không ghi trùng."""
+    if not path.exists():
+        return None
+    lines = [ln for ln in path.read_text("utf-8").splitlines() if ln.strip()]
+    if len(lines) < 2:
+        return None
+    import csv
+    last_time = next(csv.reader([lines[-1]]))[0]
+    return [r for r in csv.reader(lines[1:]) if r and r[0] == last_time][: ncols or None]
+
+
 def fmt_dots(n):
     return f"{n:,}".replace(",", ".")
 
@@ -220,6 +247,18 @@ def main():
             if (last.get("at"), last.get("buy"), last.get("sell")) != (price_as_of, tgt["buy"], tgt["sell"]):
                 history.append({"at": price_as_of, "buy": tgt["buy"], "sell": tgt["sell"]})
             doc["history"] = history[-KEEP:]
+            # Sổ vĩnh viễn: ghi cả bảng giá mỗi khi Phú Quý đăng bảng mới (đổi giờ niêm yết hoặc đổi giá).
+            rows = [[price_as_of, i["type"], i.get("unit") or "", i.get("buy") or "", i.get("sell") or ""] for i in items]
+            # Chép bù các mức giá có trong market.json nhưng chưa có trong sổ (vd. đổi giá trước khi sổ được tạo).
+            last_at = csv_last_key(PQ_CSV, 0)
+            last_at = last_at[0][0] if last_at else ""
+            gap = [h for h in history if h.get("at") and h["at"] > last_at and h["at"] != price_as_of]
+            if gap:
+                csv_append(PQ_CSV, ["thoi_diem_niem_yet", "san_pham", "don_vi", "gia_mua_vao", "gia_ban_ra"],
+                           [[h["at"], TARGET, "VNĐ/LƯỢNG", h["buy"], h["sell"]] for h in sorted(gap, key=lambda h: h["at"])])
+            prev = csv_last_key(PQ_CSV, 0)
+            if prev != [[str(c) for c in r] for r in rows]:
+                csv_append(PQ_CSV, ["thoi_diem_niem_yet", "san_pham", "don_vi", "gia_mua_vao", "gia_ban_ra"], rows)
             print(f"Phú Quý: {tgt['buy']} / {tgt['sell']} @ {price_as_of} ({len(items)} dòng)")
         else:
             errors.append(f"phuquy: không đọc được dòng {TARGET} (tìm thấy {len(items)} dòng, giờ={price_as_of})")
@@ -262,6 +301,9 @@ def main():
         last = world_hist[-1] if world_hist else {}
         if (last.get("at"), last.get("usd")) != (world["asOf"], world["usdPerOz"]):
             world_hist.append({"at": world["asOf"], "usd": world["usdPerOz"]})
+            csv_append(WORLD_CSV, ["thoi_diem", "xag_usd_oz", "thay_doi_pct", "quy_doi_vnd_kg", "nguon"],
+                       [[world["asOf"], world["usdPerOz"], "" if world.get("changePct") is None else world["changePct"],
+                         world.get("vndPerKg") or "", world.get("source") or ""]])
         doc["worldHistory"] = world_hist[-KEEP:]
 
     doc["errors"] = errors
