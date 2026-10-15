@@ -16,6 +16,7 @@ Trang giabac.vn chỉ giữ biểu đồ 1 năm gần nhất, nên mọi thứ d
 - `archive/charts/` – ảnh biểu đồ giá bạc Phú Quý 999 (khung 1 năm). GitHub Actions (`.github/workflows/archive-giabac.yml`) tự chụp lúc 17:05 mỗi ngày. `archive/charts.json` là danh sách ảnh để app hiển thị.
 - `archive/pages/` – ảnh toàn trang giabac.vn mỗi ngày (dự phòng).
 - `archive/giabac/YYYY-MM-DD/` – dữ liệu giá thô (JSON) mà giabac.vn tải về khi vẽ biểu đồ; `_nguon.json` ghi nguồn của từng tệp.
+- `archive/giabac-lich-su-kg.csv`, `archive/giabac-lich-su-luong.csv` – chuỗi giá của biểu đồ giabac.vn (giá gốc theo từng đơn vị, nhiều điểm mỗi ngày). Bắt đầu từ 16/10/2025; mỗi ngày nối thêm ngày hôm trước.
 - `archive/gia-phu-quy.csv` – sổ giá Phú Quý: mỗi lần Phú Quý đăng bảng giá mới, toàn bộ bảng được ghi thêm (mở được bằng Excel/Google Sheets).
 - `archive/gia-the-gioi.csv` – sổ giá bạc thế giới (XAG/USD) theo từng lần cập nhật.
 

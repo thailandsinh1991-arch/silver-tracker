@@ -41,6 +41,11 @@ let ok = false, note = "";
 try {
   await page.goto(URL_, { waitUntil: "networkidle", timeout: 90_000 });
 } catch (e) { note = `goto: ${e.message.split("\n")[0]}`; }
+// Hiển thị theo Lượng (giống ảnh tham chiếu), rồi khung 1 năm.
+try {
+  const unit = page.getByText("Lượng", { exact: true }).first();
+  if (await unit.isVisible({ timeout: 5000 })) { await unit.click(); await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {}); }
+} catch { /* giữ đơn vị mặc định */ }
 try {
   const btn = page.getByText("1Y", { exact: true }).first();
   if (await btn.isVisible({ timeout: 5000 })) { await btn.click(); await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {}); }
@@ -81,6 +86,39 @@ if (captured.length) {
   fs.writeFileSync(path.join(rawDir, "_nguon.json"), JSON.stringify({ trang: URL_, ngay: today, tep: index }, null, 1));
 }
 
+// Sổ dữ liệu biểu đồ: gộp chuỗi giá 1 năm vào archive/giabac-lich-su-<đơn vị>.csv (giá gốc, không quy đổi).
+// Mỗi ngày đã trọn vẹn (trước ngày chạy) chỉ ghi một lần; không bao giờ xoá dòng cũ.
+const best = {};
+for (const c of captured) {
+  try {
+    const d = JSON.parse(c.body);
+    if (!Array.isArray(d?.Dates) || !Array.isArray(d?.LastBuyPrices)) continue;
+    const type = String(d.Type || "");
+    const unit = /kilogram/i.test(type) ? "kg" : /lượng|luong/i.test(type) ? "luong" : /chỉ|chi\b/i.test(type) ? "chi" : null;
+    if (!unit) continue;
+    if (!best[unit] || d.Dates.length > best[unit].Dates.length) best[unit] = d;
+  } catch { /* bỏ qua */ }
+}
+const addedBy = {};
+for (const [unit, d] of Object.entries(best)) {
+  const file = path.join(ARCHIVE, `giabac-lich-su-${unit}.csv`);
+  const have = new Set();
+  if (fs.existsSync(file)) for (const line of fs.readFileSync(file, "utf8").split("\n").slice(1)) if (line) have.add(line.slice(0, 10));
+  const rows = [], seq = {};
+  for (let i = 0; i < d.Dates.length; i++) {
+    const day = String(d.Dates[i]).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || day >= today || have.has(day)) continue;
+    seq[day] = (seq[day] || 0) + 1;
+    rows.push([day, seq[day], Math.round(Number(d.LastBuyPrices[i])), Math.round(Number((d.LastSellPrices || [])[i]))].join(","));
+  }
+  if (rows.length) {
+    if (!fs.existsSync(file)) fs.writeFileSync(file, `# ${d.Type} — nguồn giabac.vn (Phú Quý 999)\nngay,thu_tu_trong_ngay,gia_mua_vao,gia_ban_ra\n`);
+    fs.appendFileSync(file, rows.join("\n") + "\n");
+  }
+  addedBy[unit] = rows.length;
+}
+const added = Object.entries(addedBy).map(([u, n]) => `${u}: ${n}`).join(", ") || "0";
+
 // Danh sách ảnh cho app (quét lại thư mục, không mất ảnh nào).
 const list = fs.readdirSync(path.join(ARCHIVE, "charts")).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort().reverse()
   .map((f) => ({ file: `archive/charts/${f}`, date: f.slice(0, 10), source: "giabac.vn" }));
@@ -96,5 +134,5 @@ fs.writeFileSync(path.join(ARCHIVE, "charts.json"), JSON.stringify({
   })).sort((x, y) => Date.parse(y.at) - Date.parse(x.at)),
 }, null, 1) + "\n");
 
-console.log(`Ảnh biểu đồ: ${ok ? "đã lưu" : "KHÔNG lưu được"} · gói dữ liệu JSON: ${captured.length}${note ? " · " + note : ""}`);
+console.log(`Ảnh biểu đồ: ${ok ? "đã lưu" : "KHÔNG lưu được"} · gói dữ liệu JSON: ${captured.length} · điểm mới vào sổ giabac-lich-su (${added})${note ? " · " + note : ""}`);
 process.exit(ok || captured.length ? 0 : 1);
