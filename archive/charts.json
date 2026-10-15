@@ -1,12 +1,19 @@
 {
- "updatedAt": "2026-10-15T09:15:00Z",
+ "updatedAt": "2026-10-15T18:06:28.414Z",
  "charts": [
+  {
+   "file": "archive/charts/2026-10-16.jpg",
+   "date": "2026-10-16",
+   "source": "giabac.vn",
+   "at": "2026-10-15T18:06:28.414Z",
+   "note": "Biểu đồ giá bạc Phú Quý 999 · khung 1 năm · ₫/lượng"
+  },
   {
    "file": "archive/charts/2026-10-15-anh-chup-1248.jpg",
    "date": "2026-10-15",
    "source": "giabac.vn",
-   "note": "Ảnh chụp lúc 12:48 15/10/2026 · Biểu đồ giá bạc Phú Quý 999 · khung 1 năm · ₫/lượng",
-   "at": "2026-10-15T12:48:00+07:00"
+   "at": "2026-10-15T12:48:00+07:00",
+   "note": "Ảnh chụp lúc 12:48 15/10/2026 · Biểu đồ giá bạc Phú Quý 999 · khung 1 năm · ₫/lượng"
   }
  ]
 }
