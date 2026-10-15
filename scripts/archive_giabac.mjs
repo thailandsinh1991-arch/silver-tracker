@@ -17,7 +17,8 @@ const SKIP_HOSTS = /google|gstatic|facebook|fbcdn|doubleclick|tiktok|zalo|clarit
 
 fs.mkdirSync(path.join(ARCHIVE, "charts"), { recursive: true });
 fs.mkdirSync(path.join(ARCHIVE, "pages"), { recursive: true });
-const rawDir = path.join(ARCHIVE, "giabac", today);
+const hhmm = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit" }).format(new Date()).replace(":", "");
+const rawDir = path.join(ARCHIVE, "giabac", today, hhmm); // mỗi lần chạy một thư mục, không ghi đè lần trước
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 1600 }, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", deviceScaleFactor: 1 });
@@ -74,6 +75,11 @@ try {
   } else note ||= "không thấy khung biểu đồ";
 } catch (e) { note ||= `chart: ${e.message.split("\n")[0]}`; }
 await page.screenshot({ path: path.join(ARCHIVE, "pages", `${today}.jpg`), type: "jpeg", quality: 70, fullPage: true }).catch(() => {});
+// Bấm thêm "Kilogram" để trang tải chuỗi giá theo kg (sổ giabac-lich-su-kg.csv tiếp tục được nối).
+try {
+  const kg = page.getByText("Kilogram", { exact: true }).first();
+  if (await kg.isVisible({ timeout: 3000 })) { await kg.click(); await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {}); await page.waitForTimeout(1500); }
+} catch { /* không bắt buộc */ }
 await browser.close();
 
 if (captured.length) {
