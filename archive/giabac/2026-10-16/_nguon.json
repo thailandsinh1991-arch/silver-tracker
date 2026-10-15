@@ -4,9 +4,9 @@
  "tep": [
   {
    "file": "01.json",
-   "url": "https://giabac.vn/SilverInfo/GetWorldSilverPriceUpdate?_=1792087581571",
+   "url": "https://giabac.vn/SilverInfo/GetWorldSilverPriceUpdate?_=1792087728422",
    "status": 200,
-   "bytes": 282
+   "bytes": 286
   },
   {
    "file": "02.json",
@@ -16,9 +16,15 @@
   },
   {
    "file": "03.json",
-   "url": "https://giabac.vn/SilverInfo/GetGoldPriceChartFromSQLData?days=365&type=KG",
+   "url": "https://giabac.vn/SilverInfo/GetGoldPriceChartFromSQLData?days=7&type=L",
    "status": 200,
-   "bytes": 1068537
+   "bytes": 22725
+  },
+  {
+   "file": "04.json",
+   "url": "https://giabac.vn/SilverInfo/GetGoldPriceChartFromSQLData?days=365&type=L",
+   "status": 200,
+   "bytes": 1024383
   }
  ]
 }
