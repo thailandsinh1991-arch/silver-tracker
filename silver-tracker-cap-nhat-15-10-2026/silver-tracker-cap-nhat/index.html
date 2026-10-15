@@ -1,0 +1,1611 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Silver Tracker</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Giá Bạc"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#0f172a"><meta name="color-scheme" content="light dark"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one column app shell (max 760px). Bottom tab bar on phones, sticky top tabs on desktop.
+   Palette follows the existing Silver Tracker app: deep navy ground, green for "thu mua"/gains. */
+:root {
+  --bg: #f2f4f8;
+  --surface: #ffffff;
+  --surface-2: #e9edf4;
+  --line: #d5dce7;
+  --fg: #0f172a;
+  --muted: #586378;
+  --accent: #15803d;
+  --accent-ink: #ffffff;
+  --up: #15803d;
+  --down: #c62828;
+  --warn: #a15c07;
+  --silver: #334155;
+  --shadow: 0 10px 30px rgba(15, 23, 42, .12);
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f172a; --surface: #18233d; --surface-2: #1e2d47; --line: #263553;
+    --fg: #f1f5f9; --muted: #94a3b8; --accent: #4ade80; --accent-ink: #0b1a12;
+    --up: #4ade80; --down: #f87171; --warn: #fbbf24; --silver: #cbd5e1;
+    --shadow: 0 12px 34px rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f172a; --surface: #18233d; --surface-2: #1e2d47; --line: #263553;
+  --fg: #f1f5f9; --muted: #94a3b8; --accent: #4ade80; --accent-ink: #0b1a12;
+  --up: #4ade80; --down: #f87171; --warn: #fbbf24; --silver: #cbd5e1;
+  --shadow: 0 12px 34px rgba(0, 0, 0, .45);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: var(--font-ui); font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+
+.app { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 110px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(145deg, #e2e8f0, #94a3b8 55%, #e2e8f0); box-shadow: inset 0 0 0 1px rgba(255,255,255,.4); display: grid; place-items: center; font: 600 11px var(--font-num); color: #1e293b; }
+.brand h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.brand small { display: block; color: var(--muted); font-size: 11px; }
+
+/* tabs */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; border: 0; background: none; color: var(--muted); font-size: 11px; font-weight: 500; border-radius: 10px; }
+.tab svg { width: 21px; height: 21px; }
+.tab[aria-selected="true"] { color: var(--accent); }
+@media (min-width: 820px) {
+  .app { padding-block: 26px 48px; }
+  .tabs { position: sticky; top: env(safe-area-inset-top, 0px); bottom: auto; display: flex; gap: 6px; border: 1px solid var(--line); border-radius: 12px; padding: 5px; margin-bottom: 18px; }
+  .tab { flex-direction: row; gap: 8px; padding: 8px 14px; font-size: 13px; }
+  .tab svg { width: 17px; height: 17px; }
+  .tab[aria-selected="true"] { background: var(--surface-2); }
+}
+
+h2.page { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -.02em; text-wrap: balance; }
+.lede { margin: 0 0 16px; color: var(--muted); font-size: 12.5px; }
+.stack { display: grid; gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+.eyebrow { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.row > * { min-width: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 11.5px; }
+.tiny { font-size: 10.5px; }
+.up { color: var(--up); } .down { color: var(--down); } .warn { color: var(--warn); }
+
+/* status line */
+.hdr-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.acct { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); font-size: 11.5px; font-weight: 600; color: inherit; }
+.acct.on { padding: 0; width: 30px; justify-content: center; background: var(--accent); color: var(--accent-ink); border-color: transparent; font-size: 13px; }
+.acct img { width: 30px; height: 30px; border-radius: 50%; display: block; }
+.status { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
+.dot.ok { background: var(--up); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--down); }
+
+/* market hero */
+.quote { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.quote > div { background: var(--surface-2); border-radius: 12px; padding: 12px; min-width: 0; }
+.quote .label { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; }
+.quote .val { font-family: var(--font-num); font-size: clamp(19px, 5.4vw, 26px); font-weight: 600; margin-top: 4px; letter-spacing: -.02em; }
+.quote .hint { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+.spread { margin-top: 10px; font-size: 11.5px; color: var(--muted); }
+.card.world { padding: 18px; }
+.world-main { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.world-usd { font-size: clamp(40px, 12vw, 58px); font-weight: 600; letter-spacing: -.04em; line-height: 1; color: var(--silver); }
+.world-unit { font-size: 15px; color: var(--muted); font-weight: 500; }
+.world-vnd { margin-top: 8px; font-size: clamp(18px, 5vw, 22px); font-weight: 600; }
+.spark { width: 100%; height: 64px; display: block; margin-top: 12px; }
+.spark-axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+.table-wrap { overflow-x: auto; margin-inline: -4px; }
+table { width: 100%; border-collapse: collapse; min-width: 420px; }
+th, td { text-align: left; padding: 9px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+td.r, th.r { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+td .pname { font-weight: 600; font-size: 12px; }
+
+/* portfolio card */
+.pf-value { font-family: var(--font-num); font-size: clamp(26px, 7vw, 34px); font-weight: 600; letter-spacing: -.03em; margin-top: 6px; }
+.pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.pf-grid .k { font-size: 10.5px; color: var(--muted); }
+.pf-grid .v { font-family: var(--font-num); font-size: 15px; font-weight: 600; margin-top: 2px; }
+.pf-grid .s { font-size: 10.5px; margin-top: 1px; }
+.metrics { display: grid; gap: 9px; }
+.metrics .row .v { font-family: var(--font-num); font-weight: 600; font-size: 12.5px; text-align: right; flex: none; }
+.metrics .row .k { color: var(--muted); font-size: 12px; }
+.bar { height: 6px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 6px; }
+
+.notice { display: flex; gap: 9px; align-items: flex-start; padding: 11px 12px; border-radius: 11px; font-size: 12px; line-height: 1.45; }
+.notice svg { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+.notice.err { border: 1px solid color-mix(in srgb, var(--down) 50%, transparent); color: var(--down); }
+.notice.warn { background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--fg); }
+.notice.warn svg { color: var(--warn); }
+.notice.info { background: var(--surface-2); color: var(--fg); }
+.notice .grow { flex: 1; min-width: 0; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; padding: 9px 13px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); }
+.btn svg { width: 15px; height: 15px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.danger { background: var(--down); color: #fff; border-color: transparent; }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.chips { display: flex; gap: 7px; flex-wrap: wrap; }
+.chip { padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: none; font-size: 11.5px; font-weight: 500; color: var(--muted); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* transactions */
+.tx-list { display: grid; gap: 9px; }
+.tx { display: block; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 13px; padding: 12px 13px; }
+.tx:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.tx-head { display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 9px; font-weight: 700; letter-spacing: .06em; padding: 3px 6px; border-radius: 5px; }
+.badge.buy { color: var(--up); background: color-mix(in srgb, var(--up) 15%, transparent); }
+.badge.sell { color: var(--down); background: color-mix(in srgb, var(--down) 15%, transparent); }
+.tx-date { font-size: 11px; color: var(--muted); }
+.tx-name { font-weight: 600; font-size: 13px; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-meta { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 12px; }
+.tx-meta .amt { font-family: var(--font-num); font-weight: 600; flex: none; }
+.tx-sub { margin-top: 4px; font-size: 10.5px; color: var(--muted); }
+.tx.gain { box-shadow: inset 3px 0 0 var(--up); }
+.tx.loss { box-shadow: inset 3px 0 0 var(--down); }
+.pl-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 11px; }
+.pl-row .pl-val { font-family: var(--font-num); font-weight: 600; font-size: 12.5px; }
+.pl-chip { font-family: var(--font-num); font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+.pl-chip.up { background: color-mix(in srgb, var(--up) 16%, transparent); }
+.pl-chip.down { background: color-mix(in srgb, var(--down) 16%, transparent); }
+.card.pf-up { border-color: color-mix(in srgb, var(--up) 55%, var(--line)); background: color-mix(in srgb, var(--up) 7%, var(--surface)); }
+.card.pf-down { border-color: color-mix(in srgb, var(--down) 55%, var(--line)); background: color-mix(in srgb, var(--down) 7%, var(--surface)); }
+.pl-big { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.pl-big .amt { font-family: var(--font-num); font-weight: 600; font-size: 16px; }
+.tx-note { margin-top: 5px; font-size: 11px; color: var(--muted); font-style: italic; overflow-wrap: anywhere; }
+
+.empty { text-align: center; padding: 30px 16px; display: grid; gap: 8px; justify-items: center; }
+.empty svg { width: 34px; height: 34px; color: var(--muted); }
+.empty h3 { margin: 0; font-size: 15px; }
+.skeleton { height: 74px; border-radius: 13px; background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%); background-size: 200% 100%; animation: shimmer 1.4s infinite linear; border: 1px solid var(--line); }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+.foot { font-size: 10.5px; color: var(--muted); line-height: 1.5; }
+
+/* alerts */
+.alert-item { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.alert-item:last-child { border-bottom: 0; }
+.alert-item .grow { flex: 1; min-width: 0; }
+.alert-item .t { font-weight: 600; font-size: 12.5px; }
+.pill { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.pill.on { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+.switch { position: relative; width: 38px; height: 22px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); transition: background .15s; pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); transition: transform .15s, background .15s; }
+.switch input:checked + span { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.switch input:checked + span::after { transform: translateX(16px); background: var(--accent); }
+.switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.iconbtn { border: 0; background: none; color: var(--muted); padding: 6px; border-radius: 8px; display: inline-flex; }
+.iconbtn svg { width: 16px; height: 16px; }
+.iconbtn.del { color: var(--down); }
+
+/* forms */
+.field { display: grid; gap: 5px; }
+.field label, .field .lab { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.field input, .field select, .field textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 11px; font-size: 14px; min-width: 0; }
+.field textarea { min-height: 120px; resize: vertical; font-family: var(--font-num); font-size: 12px; }
+.field input[aria-invalid="true"] { border-color: var(--down); }
+.field .err { color: var(--down); font-size: 11px; }
+.field .hint { color: var(--muted); font-size: 11px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid2 > * { min-width: 0; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border-radius: 10px; padding: 3px; border: 1px solid var(--line); }
+.seg button { border: 0; background: none; padding: 8px; border-radius: 8px; font-weight: 600; font-size: 12.5px; color: var(--muted); }
+.seg button[aria-pressed="true"].b { background: var(--up); color: var(--accent-ink); }
+.seg button[aria-pressed="true"].s { background: var(--down); color: #fff; }
+.total { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 11px 12px; border-radius: 10px; background: var(--surface-2); }
+.total .v { font-family: var(--font-num); font-weight: 600; font-size: 16px; }
+
+/* sheet */
+.scrim { position: fixed; inset: 0; z-index: 40; background: rgba(2, 6, 23, .55); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { width: 100%; max-width: 560px; max-height: calc(100% - 24px - env(safe-area-inset-top, 0px)); overflow-y: auto; background: var(--surface); border-radius: 18px 18px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); box-shadow: var(--shadow); }
+@media (min-width: 620px) { .scrim { align-items: center; } .sheet { border-radius: 18px; padding-bottom: 18px; } }
+.sheet h3 { margin: 0; font-size: 17px; }
+.sheet form { display: grid; gap: 12px; margin-top: 14px; }
+.sheet .actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+.sheet .actions .spacer { flex: 1; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--fg); color: var(--bg); padding: 9px 14px; border-radius: 10px; font-size: 12.5px; font-weight: 500; box-shadow: var(--shadow); max-width: calc(100% - 32px); }
+@media (min-width: 820px) { .toast { bottom: 28px; } }
+.charts .shot { display: block; width: 100%; border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 0; cursor: zoom-in; overflow: hidden; }
+.charts .shot img { display: block; width: 100%; height: auto; }
+.charts .meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.thumbs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-top: 10px; }
+.thumbs button { flex: none; width: 92px; border: 2px solid var(--line); border-radius: 9px; padding: 0; background: #fff; overflow: hidden; }
+.thumbs button[aria-pressed="true"] { border-color: var(--accent); }
+.thumbs img { display: block; width: 100%; height: 64px; object-fit: cover; object-position: top; }
+.thumbs span { display: block; font-size: 9.5px; padding: 3px 4px; color: #334155; background: #f1f5f9; text-align: center; }
+.viewer { position: fixed; inset: 0; z-index: 70; background: rgba(2, 6, 23, .92); display: flex; flex-direction: column; padding: calc(10px + env(safe-area-inset-top, 0px)) 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
+.viewer .vbar { display: flex; justify-content: space-between; align-items: center; color: #e2e8f0; font-size: 12.5px; gap: 10px; }
+.viewer .vimg { flex: 1; overflow: auto; margin-top: 8px; -webkit-overflow-scrolling: touch; }
+.viewer .vimg img { display: block; max-width: none; width: 100%; min-width: 600px; background: #fff; border-radius: 8px; }
+@media (min-width: 900px) { .viewer .vimg img { width: auto; max-width: 100%; min-width: 0; margin: 0 auto; } }
+a.btn { text-decoration: none; color: var(--fg); }
+a.btn.primary { color: var(--accent-ink); }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">Ag</div>
+      <div><h1>Silver Tracker</h1><small>Bạc Phú Quý · danh mục cá nhân</small></div>
+    </div>
+    <div class="hdr-right"><div class="status" id="hdr-status"></div><button class="acct" id="hdr-acct" data-action="account" hidden></button></div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Màn hình">
+    <button class="tab" role="tab" id="tab-btn-market" data-tab="market" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Thị Trường
+    </button>
+    <button class="tab" role="tab" id="tab-btn-portfolio" data-tab="portfolio" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Danh Mục
+    </button>
+    <button class="tab" role="tab" id="tab-btn-alerts" data-tab="alerts" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>Cảnh Báo
+    </button>
+  </nav>
+
+  <main>
+    <section id="view-market" role="tabpanel" aria-labelledby="tab-btn-market"></section>
+    <section id="view-portfolio" role="tabpanel" aria-labelledby="tab-btn-portfolio" hidden></section>
+    <section id="view-alerts" role="tabpanel" aria-labelledby="tab-btn-alerts" hidden></section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="firebase-config.js"></script>
+<script>
+"use strict";
+/* ---------- constants & formatting ---------- */
+const GRAMS = { gram: 1, chi: 3.75, luong: 37.5, kg: 1000 };
+const UNIT_NAMES = { gram: "g", chi: "chỉ", luong: "lượng", kg: "kg" };
+const LEGACY_BRAND = "Phú Quý (tham khảo)";
+const PRICE_ERROR_LABEL = "Chưa thể cập nhật giá hiện tại";
+const TX_ERROR_LABEL = "Không thể tải lịch sử giao dịch";
+const STALE_HOURS = 36;
+const ALERT_KINDS = {
+  buy_above: { label: "Giá thu mua ≥", field: "buy", dir: 1 },
+  buy_below: { label: "Giá thu mua ≤", field: "buy", dir: -1 },
+  sell_above: { label: "Giá bán ra ≥", field: "sell", dir: 1 },
+  sell_below: { label: "Giá bán ra ≤", field: "sell", dir: -1 },
+};
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtInt = (n) => Math.round(n).toLocaleString("vi-VN");
+const money = (n) => (n == null || !Number.isFinite(Number(n)) ? "—" : `${fmtInt(Number(n))} ₫`);
+const fmtNum = (n, d = 4) => Number(n).toLocaleString("vi-VN", { maximumFractionDigits: d });
+const signedMoney = (n) => `${n >= 0 ? "+" : "−"}${money(Math.abs(n))}`;
+const fmtTime = (iso) => {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return "—";
+  return new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(t));
+};
+const isUnit = (u) => u === "gram" || u === "chi" || u === "luong" || u === "kg";
+const round4 = (n) => Math.round(n * 10000) / 10000;
+
+function parseDate(date) {
+  const m = String(date || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const [, d, mo, y] = m.map(Number);
+  const t = new Date(Date.UTC(y, mo - 1, d));
+  if (t.getUTCFullYear() !== y || t.getUTCMonth() !== mo - 1 || t.getUTCDate() !== d) return null;
+  return t.getTime();
+}
+const isoToVnDate = (iso) => { const [y, m, d] = iso.split("-"); return `${d}/${m}/${y}`; };
+const vnDateToIso = (vn) => { const m = String(vn || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ""; };
+const todayIso = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
+/** Money: digits only (accepts 2.232.000 / 2,232,000 / 2232000). */
+const parseMoney = (s) => { const d = String(s ?? "").replace(/[^\d]/g, ""); return d ? Number(d) : NaN; };
+/** Decimal: accepts 1,5 or 1.5. */
+const parseDec = (s) => { const t = String(s ?? "").trim().replace(/\s/g, ""); if (!t) return NaN; const n = Number(t.includes(",") && !t.includes(".") ? t.replace(",", ".") : t.replace(/,/g, "")); return n; };
+function canonicalBrand(brand) {
+  const b = String(brand || "").normalize("NFD").replace(/\p{Diacritic}/gu, "").trim().toLowerCase();
+  if (!b || b.includes("phu quy")) return "phu-quy";
+  return b;
+}
+
+/* ---------- portfolio math (same rules as the fixed app) ---------- */
+function normalizedTrade(e) {
+  const type = e.transactionType === "sell" ? "sell" : "buy";
+  const unit = isUnit(e.unit) ? e.unit : "luong";
+  const q = Number(e.quantity), w = Number(e.unitWeight), p = Number(e.pricePerUnit);
+  if (q > 0 && w > 0 && p > 0) {
+    return { type, grams: round4(q * w * GRAMS[unit]), amount: Math.round(q * w * p), fee: Math.max(0, Math.round(Number(e.feeVnd) || 0)), brand: (e.brand || "").trim() || LEGACY_BRAND };
+  }
+  const luong = Math.max(0, Number(e.soLuong) || 0);
+  return { type: "buy", grams: round4(luong * GRAMS.luong), amount: Math.round(luong * Number(e.giaMua || 0)), fee: 0, brand: (e.brand || "").trim() || LEGACY_BRAND };
+}
+const orderKey = (a, b) => (parseDate(a.date) ?? 0) - (parseDate(b.date) ?? 0) || String(a.createdAt || "").localeCompare(String(b.createdAt || "")) || String(a._id).localeCompare(String(b._id));
+
+function calculatePortfolio(txs, buyback) {
+  let invested = 0, realized = 0, invalidSale = false;
+  const inv = new Map();
+  for (const e of [...txs].sort(orderKey)) {
+    const t = normalizedTrade(e);
+    if (t.grams <= 0) continue;
+    const key = canonicalBrand(t.brand);
+    const pos = inv.get(key) || { grams: 0, cost: 0 };
+    if (t.type === "buy") {
+      const c = t.amount + t.fee;
+      invested += c;
+      inv.set(key, { grams: pos.grams + t.grams, cost: pos.cost + c });
+      continue;
+    }
+    if (t.grams > pos.grams + 0.0001) { invalidSale = true; continue; }
+    const avg = pos.grams > 0 ? pos.cost / pos.grams : 0;
+    const sold = Math.round(avg * t.grams);
+    realized += (t.amount - t.fee) - sold;
+    inv.set(key, { grams: Math.max(0, pos.grams - t.grams), cost: Math.max(0, pos.cost - sold) });
+  }
+  const vals = [...inv.values()];
+  const grams = vals.reduce((s, x) => s + x.grams, 0);
+  const cost = Math.round(vals.reduce((s, x) => s + x.cost, 0));
+  const luong = grams / GRAMS.luong;
+  const avgPerLuong = luong > 0 ? cost / luong : 0;
+  const unpriced = [...inv.entries()].some(([k, p]) => p.grams > 0.0001 && k !== "phu-quy");
+  const pricedGrams = inv.get("phu-quy")?.grams ?? 0;
+  const value = buyback != null && !unpriced ? Math.round((pricedGrams / GRAMS.luong) * buyback) : null;
+  const unrealized = value == null ? null : value - cost;
+  const total = unrealized == null ? null : realized + unrealized;
+  const totalPct = total == null || invested <= 0 ? null : (total / invested) * 100;
+  const shortfall = buyback == null || luong <= 0 || unpriced ? null : avgPerLuong - buyback;
+  const progress = shortfall == null || avgPerLuong <= 0 ? null : Math.min(1, buyback / avgPerLuong);
+  const surpassed = shortfall != null && shortfall < 0 ? (Math.abs(shortfall) / avgPerLuong) * 100 : null;
+  return { grams, luong, invested: Math.round(invested), cost, avgPerLuong, value, unrealized, realized: Math.round(realized), total, totalPct, unpriced, invalidSale, shortfall, progress, surpassed };
+}
+
+function saleWouldOverdraw(rows, incoming, excludeId) {
+  const events = rows.filter((r) => r._id !== excludeId).map((r) => {
+    const t = normalizedTrade(r);
+    return { date: parseDate(r.date) ?? 0, created: String(r.createdAt || ""), type: t.type, grams: t.grams, brand: canonicalBrand(t.brand) };
+  });
+  const it = normalizedTrade(incoming);
+  events.push({ date: parseDate(incoming.date) ?? 0, created: String(incoming.createdAt || new Date().toISOString()), type: it.type, grams: it.grams, brand: canonicalBrand(it.brand) });
+  events.sort((a, b) => a.date - b.date || a.created.localeCompare(b.created));
+  let total = 0; const byBrand = new Map();
+  for (const ev of events) {
+    const bb = byBrand.get(ev.brand) ?? 0;
+    if (ev.type === "sell") {
+      if (ev.grams > total + 0.0001 || ev.grams > bb + 0.0001) return true;
+      total -= ev.grams; byBrand.set(ev.brand, bb - ev.grams);
+    } else { total += ev.grams; byBrand.set(ev.brand, bb + ev.grams); }
+  }
+  return false;
+}
+
+function txInfo(e) {
+  const unit = isUnit(e.unit) ? e.unit : "luong";
+  const legacy = !(Number(e.quantity) > 0) || !(Number(e.unitWeight) > 0) || !(Number(e.pricePerUnit) > 0);
+  const t = normalizedTrade(e);
+  return {
+    legacy, unit, grams: t.grams, amount: t.amount, fee: t.fee, kind: t.type,
+    quantity: legacy ? Number(e.soLuong) : Number(e.quantity),
+    weight: legacy ? 1 : Number(e.unitWeight),
+    price: legacy ? Number(e.giaMua) : Number(e.pricePerUnit),
+    missingBrand: legacy || !String(e.brand || "").trim(),
+  };
+}
+
+/* ---------- state ---------- */
+const state = {
+  tab: "market",
+  boot: "loading",          // loading | ready | nodb
+  uid: null, canEditMarket: false,
+  txStatus: "loading",      // loading | ready | error | signedout
+  tx: [],
+  marketStatus: "loading",  // loading | ready | missing | error
+  market: null,
+  profile: { alerts: [], history: [] }, profileLoaded: false,
+  filter: "all",
+  downloads: null,
+  cloud: "off",             // off | loading | signedout | signedin
+  user: null,
+};
+let db = null, userNs = null;
+let unsubTx = null, unsubMarket = null, unsubProfile = null;
+let profileWrite = Promise.resolve();
+
+const target = () => state.market?.target || null;
+const buyback = () => (state.marketStatus === "ready" && Number(target()?.buy) > 0 ? Number(target().buy) : null);
+const priceAgeHours = () => { const t = Date.parse(state.market?.priceAsOf); return Number.isFinite(t) ? (Date.now() - t) / 36e5 : null; };
+
+/* ---------- icons ---------- */
+const I = {
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>',
+  refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>',
+  briefcase: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+  upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>',
+  download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+};
+
+/* ---------- rendering ---------- */
+function render() {
+  for (const k of ["market", "portfolio", "alerts"]) {
+    $(`#view-${k}`).hidden = state.tab !== k;
+    $(`#tab-btn-${k}`).setAttribute("aria-selected", String(state.tab === k));
+  }
+  renderHeader();
+  if (state.tab === "market") renderMarket();
+  if (state.tab === "portfolio") renderPortfolio();
+  if (state.tab === "alerts") renderAlerts();
+}
+
+function marketStatusLine(compact) {
+  const s = state.marketStatus;
+  if (s === "loading") return `<span class="dot"></span><span class="muted">Đang tải giá…</span>`;
+  if (s !== "ready" || !target()) return `<span class="dot warn"></span><span class="warn" style="font-weight:600">${PRICE_ERROR_LABEL}</span>`;
+  const age = priceAgeHours();
+  const stale = age != null && age > STALE_HOURS;
+  const src = state.market.source === "manual" ? "nhập tay" : "Phú Quý";
+  return `<span class="dot ${stale ? "warn" : "ok"}"></span><span class="${stale ? "warn" : "muted"}">${stale ? "Giá có thể đã cũ · " : ""}${compact ? "" : "Giá " + src + " · "}${esc(fmtTime(state.market.priceAsOf))}</span>`;
+}
+
+function renderHeader() {
+  $("#hdr-status").innerHTML = state.boot === "nodb" ? `<span class="dot bad"></span><span class="muted">Chưa kết nối dữ liệu</span>` : marketStatusLine(true);
+  const b = $("#hdr-acct");
+  b.hidden = state.cloud === "off" || state.cloud === "loading";
+  if (state.cloud === "signedin" && state.user) {
+    const u = state.user, name = u.displayName || u.email || "?";
+    b.className = "acct on"; b.title = `Đã đồng bộ · ${u.email || name}`; b.setAttribute("aria-label", b.title);
+    b.innerHTML = u.photoURL ? `<img src="${esc(u.photoURL)}" alt="" referrerpolicy="no-referrer">` : esc(name.trim().charAt(0).toUpperCase());
+  } else {
+    b.className = "acct"; b.title = "Đăng nhập Google để đồng bộ giao dịch"; b.setAttribute("aria-label", b.title);
+    b.textContent = "Đăng nhập";
+  }
+}
+
+function sparkline(history, field = "buy", fmtV = fmtInt, unit = " ₫", label = "giá thu mua") {
+  const pts = (history || []).filter((h) => Number(h[field]) > 0 && Number.isFinite(Date.parse(h.at))).sort((a, b) => Date.parse(a.at) - Date.parse(b.at)).slice(-60);
+  if (pts.length < 2) return `<p class="small muted" style="margin:12px 0 0">Biểu đồ diễn biến ${label} sẽ hiện khi có từ 2 lần cập nhật trở lên.</p>`;
+  const W = 600, H = 64, P = 4;
+  const vals = pts.map((p) => Number(p[field]));
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const span = max - min || 1;
+  const x = (i) => P + (i / (pts.length - 1)) * (W - 2 * P);
+  const y = (v) => H - P - ((v - min) / span) * (H - 2 * P);
+  const line = vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const area = `${line}L${x(vals.length - 1).toFixed(1)},${H}L${x(0).toFixed(1)},${H}Z`;
+  const last = vals[vals.length - 1];
+  const chg = last - vals[0];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Diễn biến ${label} ${pts.length} lần cập nhật">
+    <path d="${area}" fill="var(--accent)" fill-opacity=".12"/>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <circle cx="${x(vals.length - 1)}" cy="${y(last)}" r="3.5" fill="var(--accent)"/>
+  </svg>
+  <div class="spark-axis"><span>${esc(fmtTime(pts[0].at))}</span><span class="${chg >= 0 ? "up" : "down"}">${chg >= 0 ? "+" : "−"}${fmtV(Math.abs(chg))}${unit} · thấp ${fmtV(min)} / cao ${fmtV(max)}</span></div>`;
+}
+
+function liveStatusHtml(m) {
+  const fmtS = (t) => new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date(t));
+  const parts = [];
+  if (m?.live?.world) parts.push(`<span class="dot ok"></span><span class="muted">Giá thế giới trực tiếp · kiểm tra ${fmtS(m.live.world.checked)} · mỗi 15 giây</span>`);
+  else if (live.worldErr) parts.push(`<span class="dot warn"></span><span class="warn">Không đọc trực tiếp được giá thế giới, đang dùng giá GitHub (30 phút)</span>`);
+  if (m?.live?.pq) parts.push(`<span class="dot ok"></span><span class="muted">Bảng giá Phú Quý trực tiếp · kiểm tra ${fmtS(m.live.pq.checked)} · mỗi phút</span>`);
+  else if (live.pqErr) parts.push(`<span class="dot warn"></span><span class="warn">Không đọc trực tiếp được Phú Quý, đang dùng giá GitHub (30 phút)</span>`);
+  return parts.map((p) => `<div class="status">${p}</div>`).join("");
+}
+function syncLine(m) {
+  const liveHtml = liveStatusHtml(m);
+  if (m?.live?.world && m?.live?.pq) return liveHtml;
+  const t = Date.parse(m?.fetchedAt);
+  if (!Number.isFinite(t)) return liveHtml;
+  const ageH = (Date.now() - t) / 36e5;
+  const late = ageH > 10;
+  return liveHtml + `<div class="status"><span class="dot ${late ? "warn" : "ok"}"></span><span class="${late ? "warn" : "muted"}">${late ? "Chưa đồng bộ được từ" : "Kiểm tra giá lúc"} ${esc(fmtTime(m.fetchedAt))}</span><span class="muted">· kiểm tra mỗi 30 phút, 07:00–22:30</span></div>`;
+}
+
+function worldHero(m) {
+  const w = m?.world;
+  if (!w || !(Number(w.usdPerOz) > 0)) {
+    if (state.marketStatus === "loading") return `<div class="skeleton" style="height:150px"></div>`;
+    return `<div class="card world"><div class="eyebrow">Giá bạc thế giới · XAG/USD</div><div class="small warn" style="margin-top:8px;font-weight:600">Chưa thể cập nhật giá thế giới</div></div>`;
+  }
+  const chg = Number(w.changePct);
+  const hasChg = Number.isFinite(chg) && w.changePct !== null && w.changePct !== undefined;
+  const perLuong = Number(w.vndPerKg) > 0 ? (Number(w.vndPerKg) * GRAMS.luong) / 1000 : null;
+  const t = target();
+  const premium = perLuong && t && Number(t.buy) > 0 ? Number(t.buy) - perLuong : null;
+  return `<div class="card world">
+    <div class="row"><div class="eyebrow">Giá bạc thế giới · XAG/USD</div>${hasChg ? `<span class="pl-chip ${chg >= 0 ? "up" : "down"}">${chg >= 0 ? "▲ +" : "▼ −"}${Math.abs(chg).toFixed(2).replace(".", ",")}%</span>` : ""}</div>
+    <div class="world-main"><span class="world-usd num">${fmtNum(w.usdPerOz, 2)}</span><span class="world-unit">USD/oz</span></div>
+    ${perLuong ? `<div class="world-vnd"><span class="num">≈ ${fmtInt(perLuong)}</span><span class="muted"> ₫/lượng</span><span class="tiny muted"> · ${fmtInt(w.vndPerKg)} ₫/kg</span></div>` : ""}
+    <div class="status" style="margin-top:8px"><span class="muted">${esc(w.asOf ? "Cập nhật " + fmtTime(w.asOf) : "")}${w.source ? " · Nguồn: " + esc(w.source) : ""}</span></div>
+    ${premium != null ? `<p class="tiny muted" style="margin:6px 0 0">Giá thu mua Phú Quý đang ${premium >= 0 ? "cao hơn" : "thấp hơn"} giá thế giới quy đổi <span class="num">${fmtInt(Math.abs(premium))} ₫/lượng</span>. ${esc(w.note || "Giá quy đổi trước thuế và phí nhập khẩu")}.</p>` : ""}
+    ${sparkline(m.worldHistory, "usd", (v) => fmtNum(v, 2), " USD", "giá thế giới")}
+    <div style="margin-top:10px">${syncLine(m)}</div>
+  </div>`;
+}
+
+/* ---------- ảnh biểu đồ tham khảo ----------
+   2 nguồn: (1) kho lưu trữ trong repo (archive/charts.json, GitHub Actions chụp mỗi ngày + ảnh đã đưa vào),
+   (2) ảnh bạn tự thêm, lưu cùng chỗ với giao dịch (tài khoản Google nếu đã đăng nhập, không thì trong trình duyệt). */
+const REPO_RAW = "https://raw.githubusercontent.com/thailandsinh1991-arch/silver-tracker/main/";
+const repoUrl = (p) => (location.hostname.endsWith("github.io") ? p : REPO_RAW + p);
+const charts = { archive: [], archiveErr: false, user: [], sel: null, unsub: null };
+async function loadChartArchive() {
+  try {
+    const r = await fetch(repoUrl("archive/charts.json") + "?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    charts.archive = (d.charts || []).map((c) => ({ id: "a:" + c.file, kind: "archive", at: c.at || `${c.date}T17:05:00+07:00`, date: c.date, note: c.note || "", src: repoUrl(c.file), file: c.file }));
+    charts.archiveErr = false;
+  } catch { charts.archiveErr = true; }
+  if (state.tab === "market") render();
+}
+const chartCollection = () => profileRef().collection("charts");
+function subscribeCharts() {
+  if (charts.unsub) charts.unsub();
+  try {
+    charts.unsub = chartCollection().onSnapshot((snap) => {
+      charts.user = snap.docs.filter((d) => d.exists).map((d) => ({ id: d.id, kind: "user", ...d.data() })).filter((c) => c.src);
+      if (state.tab === "market") render();
+    }, () => {});
+  } catch { charts.user = []; }
+}
+const allCharts = () => [...charts.user, ...charts.archive].sort((a, b) => (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
+const chartDay = (c) => (c.kind === "archive" && c.date ? c.date.split("-").reverse().join("/") : fmtTime(c.at));
+function fileToJpeg(file, maxW = 1400, q = 0.82) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => {
+      const draw = (w, qq) => {
+        const sc = Math.min(1, w / img.naturalWidth);
+        const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc);
+        const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+        return c.toDataURL("image/jpeg", qq);
+      };
+      // Firestore giới hạn 1 MB mỗi bản ghi: thu nhỏ dần nếu ảnh quá nặng.
+      let out = draw(maxW, q);
+      for (const [w, qq] of [[1200, 0.78], [1000, 0.74], [800, 0.7]]) { if (out.length <= 900_000) break; out = draw(w, qq); }
+      URL.revokeObjectURL(url); resolve(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Không đọc được ảnh")); };
+    img.src = url;
+  });
+}
+async function addChartFiles(files) {
+  const imgs = [...files].filter((f) => f && f.type && f.type.startsWith("image/"));
+  if (!imgs.length) return;
+  let added = 0;
+  for (const f of imgs) {
+    try {
+      const src = await fileToJpeg(f);
+      const ref = chartCollection().doc();
+      await ref.set({ at: new Date().toISOString(), note: "", src });
+      added++;
+    } catch (e) { toast(e?.code ? writeErrorText(e) : (e?.message || "Chưa lưu được ảnh.")); }
+  }
+  if (added) { charts.sel = null; toast(added > 1 ? `Đã lưu ${added} ảnh biểu đồ` : "Đã lưu ảnh biểu đồ"); render(); }
+}
+function chartsCard() {
+  const list = allCharts();
+  const cur = list.find((c) => c.id === charts.sel) || list[0];
+  const where = state.user ? "theo tài khoản Google của bạn" : "trong trình duyệt này (đăng nhập để giữ trên mọi máy)";
+  let h = `<div class="card charts"><div class="eyebrow">Ảnh biểu đồ tham khảo</div>
+    <div class="tiny muted" style="margin-top:3px">Kho lưu trữ tự động chụp biểu đồ 1 năm trên giabac.vn mỗi ngày lúc 17:05 và giữ vĩnh viễn trong repo. Ảnh bạn tự thêm được lưu ${where}.</div>`;
+  if (!cur) {
+    h += `<p class="small muted" style="margin:10px 0 0">${charts.archiveErr ? "Chưa tải được kho lưu trữ. " : ""}Chưa có ảnh nào. Bấm "Thêm ảnh chụp" hoặc dán ảnh (Ctrl+V) vào trang.</p>`;
+  } else {
+    h += `<button class="shot" data-chart-open="${esc(cur.id)}" style="margin-top:10px" aria-label="Phóng to ảnh biểu đồ"><img src="${esc(cur.src)}" alt="Ảnh biểu đồ giá bạc ngày ${esc(chartDay(cur))}" loading="lazy"></button>
+      <div class="meta"><span class="tiny muted"><b>${cur.kind === "archive" ? "Kho lưu trữ" : "Ảnh của bạn"}</b> · ${esc(chartDay(cur))}${cur.note ? " · " + esc(cur.note) : ""} · chạm để phóng to</span>
+      ${cur.kind === "user" ? `<button class="linkbtn tiny" style="color:var(--down)" data-chart-del="${esc(cur.id)}">Xoá ảnh này</button>` : `<a class="linkbtn tiny" href="${esc(cur.src)}" target="_blank" rel="noopener">Mở ảnh gốc</a>`}</div>`;
+    if (list.length > 1) h += `<div class="thumbs">${list.map((c) => `<button data-chart-sel="${esc(c.id)}" aria-pressed="${c.id === cur.id}" aria-label="Ảnh ngày ${esc(chartDay(c))}"><img src="${esc(c.src)}" alt="" loading="lazy"><span>${c.kind === "archive" ? "Kho · " : "Của bạn · "}${esc(chartDay(c).slice(-10))}</span></button>`).join("")}</div>`;
+  }
+  h += `<div class="btn-row" style="margin-top:12px"><label class="btn primary" for="chart-file" style="cursor:pointer">${I.upload}Thêm ảnh chụp</label><input id="chart-file" type="file" accept="image/*" multiple hidden>
+    <a class="btn" href="https://giabac.vn/" target="_blank" rel="noopener">Biểu đồ trực tiếp trên giabac.vn</a>
+    <a class="btn ghost" href="https://github.com/thailandsinh1991-arch/silver-tracker/tree/main/archive" target="_blank" rel="noopener">Toàn bộ kho lưu trữ</a></div></div>`;
+  return h;
+}
+function openChartViewer(id) {
+  const c = allCharts().find((x) => x.id === id); if (!c) return;
+  const v = document.createElement("div"); v.className = "viewer"; v.setAttribute("role", "dialog"); v.setAttribute("aria-label", "Ảnh biểu đồ");
+  v.innerHTML = `<div class="vbar"><span>${c.kind === "archive" ? "Kho lưu trữ" : "Ảnh của bạn"} · ${esc(chartDay(c))}</span><button class="btn" data-close-viewer>Đóng</button></div><div class="vimg"><img src="${esc(c.src)}" alt="Ảnh biểu đồ giá bạc"></div>`;
+  const onKey = (e) => { if (e.key === "Escape") close(); };
+  const close = () => { v.remove(); document.removeEventListener("keydown", onKey); };
+  v.addEventListener("click", (e) => { if (e.target.closest("[data-close-viewer]") || e.target === v) close(); });
+  document.addEventListener("keydown", onKey);
+  document.body.appendChild(v);
+}
+function askDeleteChart(id) {
+  const c = charts.user.find((x) => x.id === id); if (!c) return;
+  openSheet(`<h3 id="sheet-title">Xoá ảnh biểu đồ?</h3><p class="small muted">Ảnh bạn thêm lúc ${esc(fmtTime(c.at))} sẽ bị xoá${state.user ? " khỏi tài khoản (mọi máy)" : " khỏi trình duyệt này"}. Ảnh trong kho lưu trữ không bị ảnh hưởng.</p>
+    <div class="actions"><button class="btn" data-action="close">Giữ lại</button><button class="btn danger" id="cd-yes">Xoá</button></div>`, "#cd-yes");
+  $("#cd-yes").addEventListener("click", async () => {
+    try { await chartCollection().doc(c.id).delete(); charts.sel = null; closeSheet(); toast("Đã xoá ảnh"); render(); }
+    catch (e) { toast(writeErrorText(e)); }
+  });
+}
+document.addEventListener("change", (e) => { if (e.target.id === "chart-file") { addChartFiles(e.target.files); e.target.value = ""; } });
+document.addEventListener("paste", (e) => {
+  if (state.tab !== "market" || e.target.closest?.("input, textarea")) return;
+  const files = [...(e.clipboardData?.files || [])];
+  if (files.some((f) => f.type.startsWith("image/"))) { e.preventDefault(); addChartFiles(files); }
+});
+document.addEventListener("click", (e) => {
+  const o = e.target.closest("[data-chart-open]"); if (o) { openChartViewer(o.dataset.chartOpen); return; }
+  const s2 = e.target.closest("[data-chart-sel]"); if (s2) { charts.sel = s2.dataset.chartSel; render(); return; }
+  const d = e.target.closest("[data-chart-del]"); if (d) { askDeleteChart(d.dataset.chartDel); }
+});
+
+function renderMarket() {
+  const el = $("#view-market");
+  const m = state.market, t = target();
+  const triggered = (state.profile.alerts || []).filter((a) => a.enabled && a.triggered);
+  let html = `<h2 class="page">Thị trường bạc</h2><p class="lede">Giá Phú Quý theo lượng (37,5 g). Danh mục được định giá bằng giá thu mua.</p><div class="stack">`;
+  if (triggered.length) {
+    html += `<div class="notice warn">${I.bell}<div class="grow"><b>${triggered.length} cảnh báo đang kích hoạt.</b> ${triggered.map((a) => esc(alertText(a))).join(" · ")} <button class="linkbtn" data-goto="alerts">Xem</button></div></div>`;
+  }
+  html += worldHero(m);
+  if (state.marketStatus === "loading") {
+    html += `<div class="skeleton" style="height:170px"></div>`;
+  } else if (state.marketStatus !== "ready" || !t) {
+    html += `<div class="card"><div class="status">${marketStatusLine()}</div><p class="small muted" style="margin:8px 0 0">Chưa có giá Phú Quý trong app. ${state.canEditMarket ? "Bạn có thể nhập giá đang niêm yết tại giabac.phuquygroup.vn." : ""}</p>${state.canEditMarket ? `<div class="btn-row" style="margin-top:12px"><button class="btn primary" data-action="price">${I.edit}Nhập giá hiện tại</button></div>` : ""}</div>`;
+  } else {
+    const spread = Number(t.sell) - Number(t.buy);
+    html += `<div class="card">
+      <div class="row"><div class="eyebrow">${esc(t.name || "Bạc miếng Phú Quý 999 1 lượng")}</div></div>
+      <div class="status" style="margin-top:6px">${marketStatusLine()}</div>
+      <div class="quote">
+        <div><div class="label up">Thu mua</div><div class="val num up">${fmtInt(t.buy)}</div><div class="hint">₫/lượng · Phú Quý mua lại của bạn</div></div>
+        <div><div class="label muted">Bán ra</div><div class="val num">${Number(t.sell) > 0 ? fmtInt(t.sell) : "—"}</div><div class="hint">₫/lượng · giá bạn mua vào</div></div>
+      </div>
+      ${spread > 0 ? `<div class="spread">Chênh lệch mua–bán <span class="num">${fmtInt(spread)} ₫</span> (${((spread / Number(t.sell)) * 100).toFixed(1).replace(".", ",")}%). Mua vào rồi bán ngay sẽ lỗ khoảng mức này.</div>` : ""}
+      ${sparkline(m.history)}
+      ${state.canEditMarket ? `<div class="btn-row" style="margin-top:12px"><button class="btn" data-action="price">${I.edit}Nhập giá mới</button></div>` : ""}
+    </div>`;
+  }
+  html += chartsCard();
+  if (m && Array.isArray(m.items) && m.items.length) {
+    html += `<div class="card"><div class="row"><div><div class="eyebrow">Bảng giá chi tiết</div><div class="tiny muted" style="margin-top:3px">Theo bảng niêm yết Phú Quý lúc ${esc(fmtTime(m.itemsAsOf || m.priceAsOf))}</div></div></div>
+      <div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>Sản phẩm</th><th class="r">Thu mua</th><th class="r">Bán ra</th></tr></thead><tbody>
+      ${m.items.map((it) => `<tr><td><div class="pname">${esc(it.type)}</div><div class="tiny muted">${esc(it.unit || "")}</div></td><td class="r num up">${Number(it.buy) > 0 ? fmtInt(it.buy) : "—"}</td><td class="r num">${Number(it.sell) > 0 ? fmtInt(it.sell) : "—"}</td></tr>`).join("")}
+      </tbody></table></div></div>`;
+  }
+  html += `<p class="foot">1 lượng = 10 chỉ = 37,5 g · 1 kg ≈ 26,67 lượng. Nguồn giá: giabac.phuquygroup.vn, Kitco. Giá do GitHub Actions tự cập nhật.</p></div>`;
+  el.innerHTML = html;
+}
+
+function renderPortfolio() {
+  const el = $("#view-portfolio");
+  const bb = buyback();
+  const s = calculatePortfolio(state.tx, bb);
+  const priceMissing = state.marketStatus !== "loading" && bb == null;
+  const pos = (s.total ?? 0) >= 0;
+  let html = `<h2 class="page">Danh mục bạc</h2><p class="lede">Theo dõi khối lượng, giá vốn và kết quả mua bán.</p><div class="stack">`;
+
+  // Portfolio card (only the price-dependent parts react to price errors)
+  const tint = s.total == null ? "" : pos ? "pf-up" : "pf-down";
+  html += `<div class="card ${tint}"><div class="eyebrow">Danh mục của tôi${s.value != null ? " · giá trị nếu bán hôm nay" : ""}</div>
+    <div class="pf-value">${s.value != null ? money(s.value) : `<span class="muted">—</span>`}</div>
+    ${s.total != null ? `<div class="pl-big ${pos ? "up" : "down"}"><span class="amt">${pos ? "▲" : "▼"} ${signedMoney(s.total)}</span>${s.totalPct != null ? `<span class="pl-chip ${pos ? "up" : "down"}">${pos ? "+" : "−"}${Math.abs(s.totalPct).toFixed(2).replace(".", ",")}%</span>` : ""}<span class="tiny muted">so với ${money(s.invested)} vốn đã bỏ ra</span></div>` : ""}
+    ${priceMissing && state.tx.length ? `<div class="small warn" style="margin-top:2px;font-weight:600">${PRICE_ERROR_LABEL}</div>` : ""}
+    <div class="pf-grid">
+      <div><div class="k">Tổng P/L</div><div class="v ${s.total == null ? "muted" : pos ? "up" : "down"}">${s.total == null ? (priceMissing ? "Chưa có giá" : "Chưa đủ giá") : signedMoney(s.total)}</div>${s.totalPct != null ? `<div class="s ${pos ? "up" : "down"}">${pos ? "+" : "−"}${Math.abs(s.totalPct).toFixed(2).replace(".", ",")}%</div>` : ""}</div>
+      <div><div class="k">Giá hòa vốn / lượng</div><div class="v">${s.avgPerLuong > 0 ? money(s.avgPerLuong) : "—"}</div>${s.shortfall != null ? `<div class="s ${s.shortfall > 0 ? "down" : "up"}">${s.shortfall > 0 ? `Còn thiếu ${money(s.shortfall)}` : `Đã vượt hòa vốn +${(s.surpassed ?? 0).toFixed(2).replace(".", ",")}%`}</div>` : ""}</div>
+    </div>
+    ${s.grams > 0 && s.unpriced ? `<p class="tiny warn" style="margin:12px 0 0">Một số thương hiệu chưa có giá thu mua; giá trị và P/L chưa đầy đủ.</p>` : ""}
+  </div>`;
+
+  if (state.cloud === "signedout") {
+    html += `<div class="notice info">${I.info}<div class="grow"><b>Đăng nhập Google để đồng bộ.</b> Giao dịch sẽ tự tải lại trên mọi máy đăng nhập cùng tài khoản, không phải nhập lại tệp JSON.</div><button class="btn primary" data-action="signin">Đăng nhập</button></div>`;
+  }
+  if (state.txStatus === "ready" && state.tx.some((e) => txInfo(e).missingBrand)) {
+    html += `<div class="notice warn">${I.info}<div class="grow">Giao dịch cũ chưa lưu thương hiệu. Giá trị đang tham chiếu giá thu mua Phú Quý; chạm vào giao dịch để chọn thương hiệu chính xác.</div></div>`;
+  }
+
+  if (s.grams > 0) {
+    html += `<div class="card metrics">
+      <div class="row"><span class="k">Khối lượng còn giữ</span><span class="v">${fmtNum(s.grams)} g · ${fmtNum(s.luong)} lượng</span></div>
+      <div class="row"><span class="k">Giá vốn còn lại</span><span class="v">${money(s.cost)}</span></div>
+      <div class="row"><span class="k">Tổng vốn đã bỏ ra</span><span class="v">${money(s.invested)}</span></div>
+      ${s.unrealized != null ? `<div class="row"><span class="k">Lãi/lỗ chưa thực hiện (đang giữ)</span><span class="v ${s.unrealized >= 0 ? "up" : "down"}">${signedMoney(s.unrealized)}</span></div>` : ""}
+      <div class="row"><span class="k">Lãi/lỗ đã thực hiện</span><span class="v ${s.realized >= 0 ? "up" : "down"}">${signedMoney(s.realized)}</span></div>
+      ${s.progress != null ? `<div style="display:grid;gap:6px;margin-top:3px"><div class="row"><span class="k">Tiến độ hòa vốn theo giá thu mua</span><span class="v">${(s.progress * 100).toFixed(1).replace(".", ",")}%</span></div><div class="bar"><i style="width:${(s.progress * 100).toFixed(1)}%"></i></div></div>` : ""}
+    </div>`;
+  }
+
+  html += `<div class="status">${marketStatusLine()}</div>`;
+
+  if (state.txStatus === "error") {
+    html += `<div class="notice err">${I.alert}<div class="grow">${TX_ERROR_LABEL}. Kiểm tra kết nối rồi thử lại.</div><button class="btn" data-action="retry-tx">${I.refresh}Thử lại</button></div>`;
+  }
+  if (s.invalidSale) {
+    html += `<div class="notice warn">${I.alert}<div class="grow">Có giao dịch bán không khớp với khối lượng mua trước đó. Hãy kiểm tra và sửa lịch sử.</div></div>`;
+  }
+
+  const canAdd = state.txStatus === "ready";
+  html += `<div class="row" style="margin-top:6px"><div><div style="font-weight:600;font-size:15px">Lịch sử giao dịch</div><div class="tiny muted">${state.txStatus === "ready" ? `${state.tx.length} giao dịch · chạm để sửa` : state.txStatus === "loading" ? "Đang tải lịch sử…" : "&nbsp;"}</div></div>
+    <button class="btn primary" data-action="add" ${canAdd ? "" : "disabled"}>${I.plus}Thêm</button></div>`;
+  html += `<div class="chips">${[["all", "Tất cả"], ["buy", "Mua"], ["sell", "Bán"]].map(([v, l]) => `<button class="chip" data-filter="${v}" aria-pressed="${state.filter === v}">${l}</button>`).join("")}</div>`;
+
+  if (state.txStatus === "signedout") {
+    html += `<div class="card empty">${I.briefcase}<h3>Cần đăng nhập để lưu giao dịch</h3><p class="small muted" style="margin:0">Trình duyệt đang chặn bộ nhớ cục bộ. Hãy tắt chế độ ẩn danh rồi mở lại trang.</p></div>`;
+  } else if (state.txStatus === "loading") {
+    html += `<div class="tx-list"><div class="skeleton"></div><div class="skeleton"></div></div>`;
+  } else if (state.txStatus === "ready") {
+    const list = [...state.tx].sort((a, b) => -orderKey(a, b)).filter((e) => state.filter === "all" || txInfo(e).kind === state.filter);
+    if (!state.tx.length) {
+      html += `<div class="card empty">${I.briefcase}<h3>Chưa có giao dịch</h3><p class="small muted" style="margin:0;max-width:40ch">Thêm giao dịch mua hoặc bán để bắt đầu theo dõi, hoặc nhập lịch sử từ app Silver Tracker cũ.</p><div class="btn-row" style="justify-content:center;margin-top:4px"><button class="btn primary" data-action="add">${I.plus}Thêm giao dịch</button><button class="btn" data-action="import">${I.upload}Nhập từ app cũ</button></div></div>`;
+    } else if (!list.length) {
+      html += `<div class="card empty"><h3>${state.filter === "sell" ? "Chưa có giao dịch bán" : "Chưa có giao dịch mua"}</h3><p class="small muted" style="margin:0">Chọn Tất cả để xem các giao dịch khác.</p></div>`;
+    } else {
+      html += `<div class="tx-list">${list.map(txCard).join("")}</div>`;
+    }
+  }
+
+  if (state.txStatus === "ready") {
+    html += `<div class="btn-row"><button class="btn ghost" data-action="import">${I.upload}Nhập từ app cũ</button>${state.downloads && state.tx.length ? `<button class="btn ghost" data-action="export">${I.download}Sao lưu JSON</button>` : ""}</div>`;
+  }
+  html += `<p class="foot">Giá trị hiện tại dùng giá thu mua Phú Quý (mua vào), không dùng giá bán ra. Giá vốn mua có phí; phí bán được trừ khỏi tiền thu. Giá vốn tính theo bình quân gia quyền theo từng thương hiệu.</p>${state.cloud === "signedin"
+    ? `<p class="foot"><b>Đang đồng bộ theo tài khoản ${esc(state.user?.email || "Google")}.</b> Giao dịch và cảnh báo tự tải lại trên mọi máy đăng nhập cùng tài khoản; chỉ bạn đọc được dữ liệu này.</p>`
+    : `<p class="foot"><b>Giao dịch và cảnh báo đang lưu trong trình duyệt này</b>, chưa đồng bộ sang máy khác.${state.cloud === "signedout" ? " Đăng nhập Google để tự đồng bộ." : " Hãy bấm “Sao lưu JSON” định kỳ; khi đổi máy, dùng “Nhập từ app cũ” để nạp lại tệp sao lưu."}</p>`}</div>`;
+  el.innerHTML = html;
+}
+
+function txCard(e) {
+  const i = txInfo(e);
+  const sell = i.kind === "sell";
+  const brand = (e.brand || "").trim();
+  const detail = i.legacy
+    ? `${fmtNum(e.soLuong)} lượng × ${money(e.giaMua)}`
+    : `${fmtNum(i.quantity)} × ${fmtNum(i.weight)} ${UNIT_NAMES[i.unit]} · ${money(i.price)}/${UNIT_NAMES[i.unit]}`;
+  const bb = buyback();
+  let pl = "";
+  let cls = "";
+  if (!sell && bb != null && canonicalBrand(brand || LEGACY_BRAND) === "phu-quy") {
+    const cost = i.amount + i.fee;
+    const val = Math.round((i.grams / GRAMS.luong) * bb);
+    const d = val - cost, pct = cost > 0 ? (d / cost) * 100 : 0, up = d >= 0;
+    cls = up ? "gain" : "loss";
+    pl = `<div class="pl-row"><span class="muted">Nếu bán hôm nay: <span class="num">${money(val)}</span></span><span style="display:flex;gap:6px;align-items:center"><span class="pl-val ${up ? "up" : "down"}">${signedMoney(d)}</span><span class="pl-chip ${up ? "up" : "down"}">${up ? "▲ +" : "▼ −"}${Math.abs(pct).toFixed(2).replace(".", ",")}%</span></span></div>`;
+  } else if (!sell && bb == null) {
+    pl = `<div class="pl-row"><span class="muted">Lời/lỗ</span><span class="warn tiny" style="font-weight:600">${PRICE_ERROR_LABEL}</span></div>`;
+  } else if (!sell) {
+    pl = `<div class="pl-row"><span class="muted">Lời/lỗ</span><span class="muted tiny">Chưa có giá thu mua cho thương hiệu này</span></div>`;
+  }
+  return `<button class="tx ${cls}" data-edit="${esc(e._id)}" aria-label="Sửa giao dịch ${sell ? "bán" : "mua"} ngày ${esc(e.date)}">
+    <div class="tx-head"><span class="badge ${sell ? "sell" : "buy"}">${sell ? "BÁN" : "MUA"}</span><span class="tx-date num">${esc(e.date)}</span></div>
+    <div class="tx-name">${esc(e.productName || "Bạc")}${brand ? ` · ${esc(brand)}` : ` · <span class="muted">${LEGACY_BRAND}</span>`}</div>
+    <div class="tx-meta"><span>${fmtNum(i.grams)} g · ${fmtNum(i.grams / GRAMS.luong)} lượng</span><span class="amt">${money(i.amount)}</span></div>
+    <div class="tx-sub">${detail}${i.fee > 0 ? ` · Phí ${money(i.fee)}` : ""}</div>
+    ${e.note ? `<div class="tx-note">${esc(e.note)}</div>` : ""}
+    ${pl}
+  </button>`;
+}
+
+function alertText(a) {
+  const k = ALERT_KINDS[a.kind];
+  return `${k ? k.label : a.kind} ${fmtInt(a.threshold)} ₫`;
+}
+
+function renderAlerts() {
+  const el = $("#view-alerts");
+  const alerts = state.profile.alerts || [];
+  const hist = state.profile.history || [];
+  let html = `<h2 class="page">Cảnh báo giá</h2><p class="lede">Báo khi giá bạc miếng Phú Quý 1 lượng chạm mức bạn đặt. Cảnh báo hiện trong app mỗi khi có giá mới; app không gửi thông báo đẩy.</p><div class="stack">`;
+  if (state.txStatus === "signedout") {
+    html += `<div class="card empty">${I.bell}<h3>Cần đăng nhập để lưu cảnh báo</h3></div></div>`;
+    el.innerHTML = html; return;
+  }
+  const t = target();
+  html += `<div class="card"><div class="eyebrow">Giá hiện tại</div><div class="row" style="margin-top:8px"><span class="small muted">Thu mua</span><span class="num up" style="font-weight:600">${buyback() != null ? money(t.buy) + "/lượng" : PRICE_ERROR_LABEL}</span></div>
+    <div class="row" style="margin-top:4px"><span class="small muted">Bán ra</span><span class="num" style="font-weight:600">${buyback() != null && Number(t.sell) > 0 ? money(t.sell) + "/lượng" : "—"}</span></div></div>`;
+
+  html += `<div class="card"><div class="row"><div class="eyebrow">Cảnh báo của tôi</div><button class="btn primary" data-action="add-alert" ${state.profileLoaded ? "" : "disabled"}>${I.plus}Thêm</button></div>`;
+  if (!state.profileLoaded) html += `<div class="skeleton" style="height:48px;margin-top:10px"></div>`;
+  else if (!alerts.length) html += `<p class="small muted" style="margin:10px 0 0">Chưa có cảnh báo. Ví dụ: báo khi giá thu mua ≥ mức giá hòa vốn của bạn.</p>`;
+  else html += `<div style="margin-top:4px">${alerts.map((a) => `<div class="alert-item">
+      <label class="switch" title="Bật/tắt"><input type="checkbox" data-toggle-alert="${esc(a.id)}" ${a.enabled ? "checked" : ""} aria-label="Bật cảnh báo ${esc(alertText(a))}"><span></span></label>
+      <div class="grow"><div class="t num">${esc(alertText(a))}</div><div class="tiny muted">${a.lastTriggeredAt ? "Lần gần nhất: " + esc(fmtTime(a.lastTriggeredAt)) : "Chưa kích hoạt lần nào"}</div></div>
+      <span class="pill ${a.enabled && a.triggered ? "on" : ""}">${!a.enabled ? "Đang tắt" : a.triggered ? "Đang kích hoạt" : "Đang chờ"}</span>
+      <button class="iconbtn del" data-del-alert="${esc(a.id)}" aria-label="Xóa cảnh báo">${I.trash}</button></div>`).join("")}</div>`;
+  const pf = calculatePortfolio(state.tx, buyback());
+  if (state.profileLoaded && pf.avgPerLuong > 0 && !alerts.some((a) => a.kind === "buy_above" && Math.round(a.threshold) === Math.round(pf.avgPerLuong))) {
+    html += `<button class="linkbtn small" style="margin-top:10px" data-action="alert-breakeven">Thêm cảnh báo khi giá thu mua đạt giá hòa vốn ${money(pf.avgPerLuong)}</button>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="card"><div class="eyebrow">Lịch sử cảnh báo</div>${hist.length ? `<div style="margin-top:4px">${hist.slice(0, 30).map((h) => `<div class="alert-item"><div class="grow"><div class="t">${esc(h.message)}</div><div class="tiny muted">${esc(fmtTime(h.at))}</div></div></div>`).join("")}</div>` : `<p class="small muted" style="margin:10px 0 0">Chưa có lần kích hoạt nào.</p>`}</div>`;
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+/* ---------- sheet (forms) ---------- */
+function openSheet(html, focusSel) {
+  $("#sheet").innerHTML = html;
+  $("#scrim").hidden = false;
+  const f = focusSel ? $(focusSel, $("#sheet")) : $("#sheet input, #sheet button");
+  if (f) setTimeout(() => f.focus(), 30);
+}
+function closeSheet() { $("#scrim").hidden = true; $("#sheet").innerHTML = ""; }
+$("#scrim").addEventListener("click", (e) => { if (e.target.id === "scrim") closeSheet(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#scrim").hidden) closeSheet(); });
+
+let toastTimer = null;
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+}
+
+function txForm(entry) {
+  const isEdit = !!entry;
+  const i = entry ? txInfo(entry) : null;
+  const t = target();
+  const v = entry ? {
+    date: vnDateToIso(entry.date) || todayIso(), kind: i.kind,
+    brand: i.missingBrand ? LEGACY_BRAND : entry.brand, product: entry.productName || "Bạc",
+    unit: i.unit, weight: i.weight, qty: i.quantity, price: i.price, fee: i.fee, note: entry.note || "",
+  } : { date: todayIso(), kind: "buy", brand: "Phú Quý", product: "Bạc miếng 1 lượng", unit: "luong", weight: 1, qty: "", price: "", fee: 0, note: "" };
+  openSheet(`<h3 id="sheet-title">${isEdit ? "Sửa giao dịch" : "Thêm giao dịch"}</h3>
+    <p class="tiny muted" style="margin:4px 0 0">Khối lượng và giá trị được quy đổi về gram để tính danh mục.</p>
+    ${isEdit && i.missingBrand ? `<div class="notice warn" style="margin-top:12px">${I.info}<div class="grow">Giao dịch cũ chưa lưu thương hiệu và quy cách sản phẩm. Hãy xác nhận thương hiệu trước khi lưu để giá trị danh mục chính xác hơn.</div></div>` : ""}
+    <form id="tx-form" novalidate>
+      <div class="field"><span class="lab">Loại giao dịch</span><div class="seg" role="group" aria-label="Loại giao dịch">
+        <button type="button" class="b" data-kind="buy" aria-pressed="${v.kind === "buy"}">Mua</button>
+        <button type="button" class="s" data-kind="sell" aria-pressed="${v.kind === "sell"}">Bán</button></div></div>
+      <div class="grid2">
+        <div class="field"><label for="f-date">Ngày giao dịch</label><input id="f-date" type="date" value="${esc(v.date)}" max="${todayIso()}" required></div>
+        <div class="field"><label for="f-brand">Thương hiệu</label><input id="f-brand" list="brands" value="${esc(v.brand)}" autocomplete="off" required></div>
+      </div>
+      <datalist id="brands"><option value="Phú Quý"><option value="Ancarat"><option value="DOJI"></datalist>
+      <div class="field"><label for="f-product">Sản phẩm</label><input id="f-product" list="products" value="${esc(v.product)}" autocomplete="off"></div>
+      <datalist id="products"><option value="Bạc miếng 1 lượng"><option value="Bạc thỏi 5 lượng"><option value="Bạc thỏi 10 lượng"><option value="Bạc thỏi 1 kg"><option value="Đồng bạc mỹ nghệ"></datalist>
+      <div class="grid2">
+        <div class="field"><label for="f-qty">Số lượng (cái/miếng)</label><input id="f-qty" inputmode="decimal" value="${esc(v.qty === "" ? "" : fmtNum(v.qty))}" placeholder="VD: 2" required></div>
+        <div class="field"><label for="f-unit">Quy cách mỗi cái</label><div style="display:flex;gap:6px"><input id="f-weight" inputmode="decimal" value="${esc(fmtNum(v.weight))}" style="flex:1" aria-label="Khối lượng mỗi cái"><select id="f-unit" style="width:auto">${Object.keys(GRAMS).map((u) => `<option value="${u}" ${u === v.unit ? "selected" : ""}>${UNIT_NAMES[u]}</option>`).join("")}</select></div></div>
+      </div>
+      <div class="field"><label for="f-price" id="f-price-lab">Đơn giá (₫/${UNIT_NAMES[v.unit]})</label><input id="f-price" inputmode="numeric" value="${v.price === "" ? "" : esc(fmtInt(v.price))}" placeholder="${t && Number(t.sell) > 0 ? fmtInt(v.kind === "sell" ? t.buy : t.sell) : "VD: 2.232.000"}" required>
+        <span class="hint" id="f-price-hint"></span></div>
+      <div class="grid2">
+        <div class="field"><label for="f-fee">Phí (₫)</label><input id="f-fee" inputmode="numeric" value="${esc(fmtInt(v.fee || 0))}"></div>
+        <div class="field"><label for="f-note">Ghi chú</label><input id="f-note" value="${esc(v.note)}" maxlength="200"></div>
+      </div>
+      <div class="total"><span class="small muted" id="f-total-lab">Tổng tiền</span><span class="v" id="f-total">—</span></div>
+      <div class="field"><span class="err" id="f-err" role="alert"></span></div>
+      <div class="actions">
+        ${isEdit ? `<button type="button" class="btn ghost" data-action="ask-delete" style="color:var(--down)">${I.trash}Xóa</button><span class="spacer"></span>` : ""}
+        <button type="button" class="btn" data-action="close">Hủy</button>
+        <button type="submit" class="btn primary" id="f-save">${isEdit ? "Lưu thay đổi" : "Thêm giao dịch"}</button>
+      </div>
+    </form>`, "#f-qty");
+  const form = $("#tx-form");
+  form.dataset.kind = v.kind;
+  form.dataset.id = entry ? entry._id : "";
+  const update = () => {
+    const kind = form.dataset.kind;
+    const unit = $("#f-unit").value;
+    $("#f-price-lab").textContent = `Đơn giá (₫/${UNIT_NAMES[unit]})`;
+    const tt = target();
+    $("#f-price-hint").textContent = tt && buyback() != null && unit === "luong" && canonicalBrand($("#f-brand").value) === "phu-quy"
+      ? (kind === "buy" ? `Phú Quý đang bán ra ${money(tt.sell)}/lượng` : `Phú Quý đang thu mua ${money(tt.buy)}/lượng`) : "";
+    const q = parseDec($("#f-qty").value), w = parseDec($("#f-weight").value), p = parseMoney($("#f-price").value), fee = parseMoney($("#f-fee").value) || 0;
+    if (q > 0 && w > 0 && p > 0) {
+      const gross = q * w * p, g = q * w * GRAMS[unit];
+      $("#f-total-lab").textContent = kind === "buy" ? `Tổng chi (đã gồm phí) · ${fmtNum(g)} g` : `Tiền thu về (đã trừ phí) · ${fmtNum(g)} g`;
+      $("#f-total").textContent = money(kind === "buy" ? gross + fee : gross - fee);
+    } else { $("#f-total-lab").textContent = "Tổng tiền"; $("#f-total").textContent = "—"; }
+  };
+  form.addEventListener("input", update);
+  form.addEventListener("change", update);
+  form.querySelectorAll("[data-kind]").forEach((b) => b.addEventListener("click", () => {
+    form.dataset.kind = b.dataset.kind;
+    form.querySelectorAll("[data-kind]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    update();
+  }));
+  form.addEventListener("submit", (e) => { e.preventDefault(); saveTxFromForm(form, entry); });
+  update();
+}
+
+function buildTx(form) {
+  const err = (m, sel) => { if (sel) $(sel).setAttribute("aria-invalid", "true"); return { error: m }; };
+  form.querySelectorAll("[aria-invalid]").forEach((x) => x.removeAttribute("aria-invalid"));
+  const iso = $("#f-date").value;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return err("Chọn ngày giao dịch.", "#f-date");
+  const date = isoToVnDate(iso);
+  if (parseDate(date) == null) return err("Ngày không hợp lệ.", "#f-date");
+  const brand = $("#f-brand").value.trim();
+  if (!brand) return err("Nhập thương hiệu.", "#f-brand");
+  const unit = $("#f-unit").value;
+  const q = parseDec($("#f-qty").value);
+  if (!(q > 0)) return err("Số lượng phải lớn hơn 0.", "#f-qty");
+  const w = parseDec($("#f-weight").value);
+  if (!(w > 0)) return err("Quy cách mỗi cái phải lớn hơn 0.", "#f-weight");
+  const p = parseMoney($("#f-price").value);
+  if (!(p > 0)) return err("Nhập đơn giá.", "#f-price");
+  const feeRaw = $("#f-fee").value.trim();
+  const fee = feeRaw ? parseMoney(feeRaw) : 0;
+  if (!(fee >= 0)) return err("Phí không hợp lệ.", "#f-fee");
+  const grams = q * w * GRAMS[unit];
+  const giaMua = Math.round((p * GRAMS.luong) / (w * GRAMS[unit]));
+  if (!Number.isSafeInteger(giaMua)) return err("Đơn giá quá lớn.", "#f-price");
+  return {
+    data: {
+      date, transactionType: form.dataset.kind === "sell" ? "sell" : "buy",
+      brand: brand === LEGACY_BRAND ? "Phú Quý" : brand,
+      productName: $("#f-product").value.trim() || "Bạc",
+      unit, unitWeight: round4(w), quantity: round4(q), pricePerUnit: p, feeVnd: fee,
+      note: $("#f-note").value.trim(),
+      soLuong: round4(grams / GRAMS.luong), giaMua,
+    },
+  };
+}
+
+async function saveTxFromForm(form, entry) {
+  const r = buildTx(form);
+  if (r.error) { $("#f-err").textContent = r.error; return; }
+  const now = new Date().toISOString();
+  const body = { ...r.data, createdAt: entry?.createdAt || now, updatedAt: now };
+  if (entry?.legacyId != null) body.legacyId = entry.legacyId;
+  if (body.transactionType === "sell" || entry) {
+    if (saleWouldOverdraw(state.tx, body, entry?._id)) { $("#f-err").textContent = "Số bạc bán vượt quá khối lượng đang sở hữu tại ngày giao dịch."; return; }
+  }
+  const btn = $("#f-save"); btn.disabled = true;
+  try {
+    const col = txCollection();
+    await (entry ? col.doc(entry._id) : col.doc()).set(body);
+    closeSheet(); toast(entry ? "Đã lưu giao dịch" : "Đã thêm giao dịch");
+  } catch (e) {
+    btn.disabled = false;
+    $("#f-err").textContent = writeErrorText(e);
+  }
+}
+
+function writeErrorText(e) {
+  const c = e?.code;
+  if (c === "invalid_argument") return "Bạn không có quyền ghi dữ liệu ở trang này.";
+  if (c === "quota_exceeded") return "Bộ nhớ dữ liệu đã đầy. Xóa bớt giao dịch cũ rồi thử lại.";
+  if (c === "resource_exhausted") return "Thao tác quá nhanh. Đợi vài giây rồi thử lại.";
+  return "Chưa lưu được. Kiểm tra kết nối rồi thử lại.";
+}
+
+function askDelete(entry) {
+  const i = txInfo(entry);
+  openSheet(`<h3 id="sheet-title">Xóa giao dịch?</h3>
+    <p class="small muted">${i.kind === "sell" ? "Bán" : "Mua"} ${fmtNum(i.grams / GRAMS.luong)} lượng ngày ${esc(entry.date)} · ${money(i.amount)}. Giao dịch sẽ bị xóa khỏi lịch sử và các chỉ số danh mục được tính lại.</p>
+    <div class="field"><span class="err" id="d-err" role="alert"></span></div>
+    <div class="actions"><button class="btn" data-action="close">Giữ lại</button><button class="btn danger" id="d-yes">Xóa</button></div>`, "#d-yes");
+  $("#d-yes").addEventListener("click", async () => {
+    const remaining = state.tx.filter((x) => x._id !== entry._id);
+    if (i.kind === "buy" && hasOverdraw(remaining)) { $("#d-err").textContent = "Không thể xóa: các giao dịch bán sau đó sẽ vượt quá khối lượng đang sở hữu."; return; }
+    $("#d-yes").disabled = true;
+    try { await txCollection().doc(entry._id).delete(); closeSheet(); toast("Đã xóa giao dịch"); }
+    catch (e) { $("#d-yes").disabled = false; $("#d-err").textContent = writeErrorText(e); }
+  });
+}
+function hasOverdraw(rows) {
+  const sells = rows.filter((r) => normalizedTrade(r).type === "sell");
+  return sells.some((s) => saleWouldOverdraw(rows.filter((r) => r !== s), s, s._id));
+}
+
+function priceForm() {
+  const t = target();
+  openSheet(`<h3 id="sheet-title">Nhập giá Phú Quý</h3>
+    <p class="tiny muted" style="margin:4px 0 0">Bạc miếng Phú Quý 999 1 lượng, theo bảng giá tại giabac.phuquygroup.vn.</p>
+    <form id="p-form" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="p-buy">Thu mua (₫/lượng)</label><input id="p-buy" inputmode="numeric" value="${t ? esc(fmtInt(t.buy)) : ""}" required></div>
+        <div class="field"><label for="p-sell">Bán ra (₫/lượng)</label><input id="p-sell" inputmode="numeric" value="${t && Number(t.sell) > 0 ? esc(fmtInt(t.sell)) : ""}"></div>
+      </div>
+      <div class="field"><span class="err" id="p-err" role="alert"></span></div>
+      <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="p-save">Cập nhật giá</button></div>
+    </form>`, "#p-buy");
+  $("#p-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const buy = parseMoney($("#p-buy").value), sellRaw = $("#p-sell").value.trim(), sell = sellRaw ? parseMoney(sellRaw) : null;
+    if (!(buy >= 100000 && buy <= 100000000)) { $("#p-err").textContent = "Giá thu mua phải nằm trong khoảng 100.000 – 100.000.000 ₫/lượng."; return; }
+    if (sell != null && !(sell >= buy)) { $("#p-err").textContent = "Giá bán ra phải lớn hơn hoặc bằng giá thu mua."; return; }
+    $("#p-save").disabled = true;
+    const now = new Date().toISOString();
+    const prev = state.market || {};
+    const history = [...(Array.isArray(prev.history) ? prev.history : []), { at: now, buy, sell }].slice(-240);
+    const next = { ...prev, target: { name: prev.target?.name || "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG", buy, sell }, priceAsOf: now, source: "manual", history };
+    try { await db.doc("market/phuquy").set(next); closeSheet(); toast("Đã cập nhật giá"); }
+    catch (err) { $("#p-save").disabled = false; $("#p-err").textContent = writeErrorText(err); }
+  });
+}
+
+/* ---------- import / export ---------- */
+function importForm() {
+  openSheet(`<h3 id="sheet-title">Nhập lịch sử / tệp sao lưu</h3>
+    <p class="small muted" style="margin:6px 0 0">Chọn tệp <span class="num">silver-tracker-….json</span> đã sao lưu từ Silver Tracker (bản Claude hoặc bản này). Hoặc dán dữ liệu JSON của bảng <span class="num">journal_entries</span>. Lấy bằng một trong hai cách:</p>
+    <ol class="small muted" style="margin:6px 0 0;padding-left:18px;display:grid;gap:4px">
+      <li>Mở <span class="num">https://&lt;app-cũ&gt;/api/journal</span> rồi sao chép toàn bộ nội dung.</li>
+      <li>Trong Database của Replit, chạy <span class="num" style="user-select:all">SELECT json_agg(j ORDER BY j.id) FROM journal_entries j;</span> rồi sao chép kết quả.</li>
+    </ol>
+    <form id="i-form" novalidate>
+      <div class="field"><label for="i-text">Dữ liệu JSON</label><textarea id="i-text" spellcheck="false" placeholder='[{"id":1,"date":"12/03/2026","so_luong":"2.0000","gia_mua":2850000,...}]'></textarea>
+        <span class="hint">Hoặc chọn tệp .json: <input id="i-file" type="file" accept=".json,application/json,text/plain" style="font-size:11px"></span></div>
+      <div class="field"><span class="hint" id="i-preview"></span><span class="err" id="i-err" role="alert"></span></div>
+      <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="i-save" disabled>Nhập</button></div>
+    </form>`, "#i-text");
+  let parsed = null;
+  const check = () => {
+    $("#i-err").textContent = ""; $("#i-preview").textContent = ""; $("#i-save").disabled = true; parsed = null;
+    const raw = $("#i-text").value.trim();
+    if (!raw) return;
+    const r = parseImport(raw);
+    if (r.error) { $("#i-err").textContent = r.error; return; }
+    // Same date + quantity + price as an existing buy = same purchase: reuse its document, never duplicate.
+    const sig = (x) => `${x.date}|${round4(Number(x.soLuong))}|${Math.round(Number(x.giaMua))}`;
+    const bySig = new Map(state.tx.filter((x) => x.transactionType !== "sell").map((x) => [sig(x), x._id]));
+    parsed = r.rows.map((x) => (bySig.has(sig(x)) && x.transactionType !== "sell" ? { ...x, docId: bySig.get(sig(x)) } : x));
+    const exists = new Set(state.tx.map((x) => x._id));
+    const dup = parsed.filter((x) => exists.has(x.docId)).length;
+    $("#i-preview").textContent = `Tìm thấy ${parsed.length} giao dịch (${r.legacy} giao dịch kiểu cũ được quy về: mua, đơn vị lượng, quy cách 1, phí 0)${dup ? `; ${dup} giao dịch đã có sẵn sẽ được ghi đè bằng dữ liệu mới nhập, không tạo trùng` : ""}${r.skipped ? `; bỏ qua ${r.skipped} dòng thiếu ngày, số lượng hoặc giá` : ""}.`;
+    $("#i-save").disabled = !parsed.length;
+  };
+  $("#i-text").addEventListener("input", check);
+  $("#i-file").addEventListener("change", async (e) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    $("#i-text").value = await f.text(); check();
+  });
+  $("#i-form").addEventListener("submit", async (e) => {
+    e.preventDefault(); if (!parsed?.length) return;
+    $("#i-save").disabled = true;
+    const col = txCollection();
+    let done = 0;
+    try {
+      for (const r of parsed) {
+        const { docId, ...body } = r;
+        await col.doc(docId).set(body);
+        done++; $("#i-preview").textContent = `Đang nhập ${done}/${parsed.length}…`;
+      }
+      closeSheet(); toast(`Đã nhập ${done} giao dịch`);
+    } catch (err) {
+      $("#i-err").textContent = `Đã nhập ${done}/${parsed.length}. ${writeErrorText(err)} Nhập lại sẽ không tạo trùng.`;
+      $("#i-save").disabled = false;
+    }
+  });
+}
+
+function parseBackup(list) {
+  const rows = []; let skipped = 0;
+  for (const o of list) {
+    if (!o || typeof o !== "object" || parseDate(o.date) == null) { skipped++; continue; }
+    const { id, _id, ...body } = o;
+    const t = normalizedTrade(body);
+    if (!(t.grams > 0)) { skipped++; continue; }
+    rows.push({ ...body, docId: String(id || _id || `import-${rows.length}-${Date.now()}`).replace(/[^A-Za-z0-9_\-.~:@+]/g, "-") });
+  }
+  if (!rows.length) return { error: "Tệp sao lưu không có giao dịch hợp lệ." };
+  return { rows, legacy: 0, skipped };
+}
+function parseImport(raw) {
+  let data;
+  try { data = JSON.parse(raw); } catch { return { error: "Dữ liệu không phải JSON hợp lệ. Hãy sao chép toàn bộ, bắt đầu bằng [ và kết thúc bằng ]." }; }
+  if (data && !Array.isArray(data) && data.app === "silver-tracker" && Array.isArray(data.transactions)) return parseBackup(data.transactions);
+  if (!Array.isArray(data) && data && typeof data === "object") data = data.json_agg || data.rows || data.data || data.entries || Object.values(data).find(Array.isArray);
+  if (Array.isArray(data) && data.length === 1 && Array.isArray(data[0]?.json_agg)) data = data[0].json_agg;
+  if (!Array.isArray(data)) return { error: "Không tìm thấy danh sách giao dịch trong dữ liệu." };
+  const pick = (o, ...ks) => { for (const k of ks) if (o[k] !== undefined && o[k] !== null && o[k] !== "") return o[k]; return undefined; };
+  const rows = []; let legacy = 0, skipped = 0;
+  for (const o of data) {
+    if (!o || typeof o !== "object") { skipped++; continue; }
+    const date = String(pick(o, "date") ?? "").trim();
+    const soLuong = Number(pick(o, "soLuong", "so_luong"));
+    const giaMua = Number(pick(o, "giaMua", "gia_mua"));
+    if (parseDate(date) == null || !(soLuong > 0) || !(giaMua > 0)) { skipped++; continue; }
+    const id = pick(o, "id");
+    const q = Number(pick(o, "quantity")), w = Number(pick(o, "unitWeight", "unit_weight")), p = Number(pick(o, "pricePerUnit", "price_per_unit"));
+    const unitRaw = pick(o, "unit");
+    const isNew = q > 0 && w > 0 && p > 0;
+    if (!isNew) legacy++;
+    const createdRaw = pick(o, "createdAt", "created_at");
+    const createdAt = Number.isFinite(Date.parse(createdRaw)) ? new Date(Date.parse(createdRaw)).toISOString() : new Date().toISOString();
+    rows.push({
+      docId: id != null && /^\d+$/.test(String(id)) ? `legacy-${id}` : `import-${date.replace(/\//g, "")}-${rows.length}-${Math.round(soLuong * 10000)}`,
+      legacyId: id != null && /^\d+$/.test(String(id)) ? Number(id) : null,
+      date, note: String(pick(o, "note") ?? ""), createdAt, updatedAt: new Date().toISOString(),
+      soLuong: round4(soLuong), giaMua: Math.round(giaMua),
+      transactionType: isNew && pick(o, "transactionType", "transaction_type") === "sell" ? "sell" : "buy",
+      brand: String(pick(o, "brand") ?? ""),
+      productName: String(pick(o, "productName", "product_name") ?? ""),
+      unit: isNew && isUnit(unitRaw) ? unitRaw : "luong",
+      unitWeight: isNew ? round4(w) : 1,
+      quantity: isNew ? round4(q) : round4(soLuong),
+      pricePerUnit: isNew ? p : Math.round(giaMua),
+      feeVnd: isNew ? Math.max(0, Math.round(Number(pick(o, "feeVnd", "fee_vnd")) || 0)) : 0,
+    });
+  }
+  if (!rows.length) return { error: "Không có dòng nào đủ ngày (dd/mm/yyyy), số lượng và giá mua." };
+  return { rows, legacy, skipped };
+}
+
+async function exportJson() {
+  if (!state.downloads) return;
+  const rows = [...state.tx].sort(orderKey).map(({ _id, ...r }) => ({ id: _id, ...r }));
+  const payload = JSON.stringify({ app: "silver-tracker", exportedAt: new Date().toISOString(), transactions: rows }, null, 2);
+  try { await state.downloads.save({ filename: `silver-tracker-${todayIso()}.json`, data: payload }); }
+  catch (e) { if (e?.code !== "declined") toast("Chưa tải được tệp sao lưu."); }
+}
+
+/* ---------- alerts ---------- */
+function alertForm(preset) {
+  openSheet(`<h3 id="sheet-title">Thêm cảnh báo</h3>
+    <form id="a-form" novalidate>
+      <div class="field"><label for="a-kind">Điều kiện</label><select id="a-kind">${Object.entries(ALERT_KINDS).map(([k, v]) => `<option value="${k}" ${preset?.kind === k ? "selected" : ""}>${v.label}</option>`).join("")}</select></div>
+      <div class="field"><label for="a-th">Mức giá (₫/lượng)</label><input id="a-th" inputmode="numeric" value="${preset?.threshold ? esc(fmtInt(preset.threshold)) : ""}" required>
+        <span class="hint">${buyback() != null ? `Hiện tại: thu mua ${money(target().buy)}, bán ra ${money(target().sell)}` : ""}</span></div>
+      <div class="field"><span class="err" id="a-err" role="alert"></span></div>
+      <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="a-save">Thêm cảnh báo</button></div>
+    </form>`, "#a-th");
+  $("#a-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const th = parseMoney($("#a-th").value);
+    if (!(th > 0)) { $("#a-err").textContent = "Nhập mức giá."; return; }
+    const a = { id: `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind: $("#a-kind").value, threshold: th, enabled: true, triggered: false, createdAt: new Date().toISOString() };
+    const next = cloneProfile();
+    next.alerts.push(a);
+    evaluateAlertsInto(next, true);
+    $("#a-save").disabled = true;
+    try { await writeProfile(next); closeSheet(); toast("Đã thêm cảnh báo"); }
+    catch (err) { $("#a-save").disabled = false; $("#a-err").textContent = writeErrorText(err); }
+  });
+}
+const cloneProfile = () => JSON.parse(JSON.stringify({ alerts: state.profile.alerts || [], history: state.profile.history || [], lastEvaluatedKey: state.profile.lastEvaluatedKey || null }));
+const priceKey = () => { const t = target(); return t ? `${state.market.priceAsOf}|${t.buy}|${t.sell}` : null; };
+
+/** Mutates p; returns true when something changed. */
+function evaluateAlertsInto(p, force) {
+  const t = target();
+  if (buyback() == null) return false;
+  const key = priceKey();
+  if (!force && p.lastEvaluatedKey === key) return false;
+  let changed = p.lastEvaluatedKey !== key;
+  p.lastEvaluatedKey = key;
+  const now = new Date().toISOString();
+  for (const a of p.alerts) {
+    const k = ALERT_KINDS[a.kind];
+    if (!k || !a.enabled) continue;
+    const val = Number(t[k.field]);
+    if (!(val > 0)) continue;
+    const hit = k.dir > 0 ? val >= a.threshold : val <= a.threshold;
+    if (hit && !a.triggered) {
+      a.triggered = true; a.lastTriggeredAt = now; changed = true;
+      p.history.unshift({ at: now, alertId: a.id, message: `${k.field === "buy" ? "Giá thu mua" : "Giá bán ra"} ${fmtInt(val)} ₫ đã ${k.dir > 0 ? "chạm hoặc vượt" : "chạm hoặc xuống dưới"} ${fmtInt(a.threshold)} ₫` });
+    } else if (!hit && a.triggered) { a.triggered = false; changed = true; }
+  }
+  p.history = p.history.slice(0, 50);
+  return changed;
+}
+function writeProfile(next) {
+  state.profile = next; render();
+  const run = profileWrite.then(() => profileRef().set(next));
+  profileWrite = run.catch(() => {});
+  return run;
+}
+function maybeEvaluateAlerts() {
+  if (!state.profileLoaded || !state.uid || !(state.profile.alerts || []).length) return;
+  const next = cloneProfile();
+  if (evaluateAlertsInto(next, false)) writeProfile(next).catch(() => {});
+}
+
+/* ---------- data wiring (GitHub Pages) ----------
+   Giá thị trường: đọc data/market.json (GitHub Actions cập nhật).
+   Giao dịch & cảnh báo: lưu trong trình duyệt này (localStorage), không gửi đi đâu. */
+const LS_KEY = "silver-tracker-v1";
+const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}") || {}; } catch { return {}; } };
+const lsWrite = (o) => {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(o)); }
+  catch (e) { const err = new Error("storage"); err.code = e?.name === "QuotaExceededError" ? "quota_exceeded" : "storage_blocked"; throw err; }
+};
+const lsListeners = new Set();
+const lsNotify = () => { for (const fn of lsListeners) { try { fn(); } catch {} } };
+window.addEventListener("storage", (e) => { if (e.key === LS_KEY) lsNotify(); });
+const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const snapDoc = (id, data) => ({ id, exists: data != null, data: () => (data == null ? undefined : JSON.parse(JSON.stringify(data))) });
+
+function localDoc(path) {
+  return {
+    async set(data) { const s = lsRead(); s[path] = JSON.parse(JSON.stringify(data)); lsWrite(s); lsNotify(); },
+    async delete() { const s = lsRead(); delete s[path]; lsWrite(s); lsNotify(); },
+    onSnapshot(cb, _err) { const fn = () => cb(snapDoc(path.split("/").pop(), lsRead()[path])); lsListeners.add(fn); fn(); return () => lsListeners.delete(fn); },
+    collection(name) { return localCollection(`${path}/${name}`); },
+  };
+}
+function localCollection(path) {
+  return {
+    doc(id) { return localDoc(`${path}/${id || newId()}`); },
+    onSnapshot(cb, _err) {
+      const fn = () => {
+        const s = lsRead(), pre = path + "/";
+        const docs = Object.keys(s).filter((k) => k.startsWith(pre) && !k.slice(pre.length).includes("/")).map((k) => snapDoc(k.slice(pre.length), s[k]));
+        cb({ docs });
+      };
+      lsListeners.add(fn); fn(); return () => lsListeners.delete(fn);
+    },
+  };
+}
+const localDb = { doc: localDoc };
+db = localDb;
+const profileRef = () => db.doc(`data/users/${state.uid}/profile`);
+const txCollection = () => profileRef().collection("tx");
+
+function subscribeTx() {
+  if (unsubTx) unsubTx();
+  state.txStatus = "loading"; render();
+  try {
+    unsubTx = txCollection().onSnapshot((snap) => {
+      state.tx = snap.docs.filter((d) => d.exists).map((d) => ({ _id: d.id, ...d.data() }));
+      state.txStatus = "ready"; render();
+    }, () => { state.txStatus = "error"; render(); });
+  } catch { state.txStatus = "error"; render(); }
+}
+
+/* ---------- market data: GitHub snapshot (every 30') + live browser feeds ---------- */
+const MARKET_JSON = () => (location.hostname.endsWith("github.io") ? `data/market.json` : `https://raw.githubusercontent.com/thailandsinh1991-arch/silver-tracker/main/data/market.json`) + `?t=${Date.now()}`;
+const PQ_URL = "https://giabac.phuquygroup.vn/";
+const SQ_URL = "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAG/USD";
+const PROXIES = [
+  (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+];
+const WORLD_EVERY = 15 * 1000, PQ_EVERY = 60 * 1000, JSON_EVERY = 5 * 60 * 1000;
+const route = {};            // remembers which route works per source: "direct" | proxy index
+const live = { world: null, pq: null, worldErr: null, pqErr: null };
+let base = null;             // last data/market.json
+let marketTimers = [];
+
+async function fetchWithTimeout(url, ms = 9000) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms);
+  try { const r = await fetch(url, { cache: "no-store", signal: ctl.signal }); if (!r.ok) throw new Error("HTTP " + r.status); return await r.text(); }
+  finally { clearTimeout(t); }
+}
+/** Try the remembered route first, then direct, then each public CORS proxy. */
+async function fetchSmart(key, url) {
+  const tries = [];
+  if (route[key] !== undefined) tries.push(route[key]);
+  for (const r of ["direct", 0, 1]) if (!tries.includes(r)) tries.push(r);
+  let lastErr;
+  for (const r of tries) {
+    try {
+      const txt = await fetchWithTimeout(r === "direct" ? url : PROXIES[r](url));
+      route[key] = r; return { txt, via: r === "direct" ? "trực tiếp" : "qua máy chủ trung chuyển" };
+    } catch (e) { lastErr = e; }
+  }
+  delete route[key]; throw lastErr || new Error("không đọc được");
+}
+
+async function pollWorld() {
+  if (document.hidden) return;
+  try {
+    const { txt, via } = await fetchSmart("sq", SQ_URL);
+    const arr = JSON.parse(txt);
+    const feed = arr.find((x) => x?.spreadProfilePrices?.length) || arr[0];
+    const pr = feed.spreadProfilePrices.find((x) => x.spreadProfile === "prime") || feed.spreadProfilePrices[0];
+    const bid = Number(pr.bid), ask = Number(pr.ask), ts = Number(feed.ts);
+    if (!(bid > 5 && bid < 500)) throw new Error("giá bất thường");
+    live.world = { bid, ask, at: Number.isFinite(ts) && ts > 0 ? new Date(ts).toISOString() : new Date().toISOString(), via, checked: Date.now() };
+    live.worldErr = null;
+  } catch (e) { live.worldErr = String(e?.message || e); }
+  applyMarket();
+}
+
+function parsePhuQuy(html) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const items = [];
+  doc.querySelectorAll("tr").forEach((tr) => {
+    const tds = tr.querySelectorAll("td"); if (tds.length < 2) return;
+    const type = tds[0].textContent.replace(/\s+/g, " ").trim();
+    const b = tr.querySelector(".silver-buy-price")?.textContent.trim(), se = tr.querySelector(".silver-sell-price")?.textContent.trim();
+    if (!type || !b) return;
+    const unit = tds[1].textContent.replace(/\s+/g, " ").trim();
+    items.push({ type, unit: /VN/i.test(unit) ? unit : "", buy: parseMoney(b), sell: se && parseMoney(se) > 0 ? parseMoney(se) : null });
+  });
+  const tgt = items.find((i) => i.type.toUpperCase().includes("BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG"));
+  if (!tgt || !(tgt.buy > 500000 && tgt.buy < 20000000)) throw new Error("không thấy giá bạc miếng 1 lượng");
+  const text = (doc.body?.textContent || "").replace(/\s+/g, " ");
+  const m = text.match(/(\d{1,2}):(\d{2})\s*(?:ngày\s*)?(\d{1,2})\/(\d{1,2})\/(\d{4})/i);
+  const p2 = (n) => String(n).padStart(2, "0");
+  const asOf = m ? `${m[5]}-${p2(m[4])}-${p2(m[3])}T${p2(m[1])}:${m[2]}:00+07:00` : null;
+  const ref = text.match(/([\d.,]+)\s*USD\s*\/\s*OUNCE\s*≈\s*([\d.,]+)\s*VNĐ\s*\/\s*KG/i);
+  return { items, target: { name: "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG", buy: tgt.buy, sell: tgt.sell }, asOf,
+    refUsd: ref ? Number(ref[1].replace(/,/g, "")) : null, refVndKg: ref ? parseMoney(ref[2]) : null };
+}
+async function pollPhuQuy() {
+  if (document.hidden) return;
+  try {
+    const { txt, via } = await fetchSmart("pq", PQ_URL);
+    live.pq = { ...parsePhuQuy(txt), via, checked: Date.now() };
+    live.pqErr = null;
+  } catch (e) { live.pqErr = String(e?.message || e); }
+  applyMarket();
+}
+
+async function loadMarket() {
+  try {
+    const r = await fetch(MARKET_JSON(), { cache: "no-store" });
+    if (!r.ok) throw new Error(String(r.status));
+    base = await r.json();
+  } catch { /* keep previous snapshot */ }
+  applyMarket();
+}
+
+/** Merge the GitHub snapshot with whatever live data is fresher. */
+function applyMarket() {
+  if (!base && !live.pq) { if (state.marketStatus === "loading" && live.pqErr) state.marketStatus = "error"; render(); return; }
+  const m = JSON.parse(JSON.stringify(base || {}));
+  m.history = Array.isArray(m.history) ? m.history : [];
+  m.worldHistory = Array.isArray(m.worldHistory) ? m.worldHistory : [];
+  m.live = { pq: null, world: null };
+  const pq = live.pq;
+  if (pq && (!m.priceAsOf || !pq.asOf || Date.parse(pq.asOf) >= Date.parse(m.priceAsOf))) {
+    m.target = pq.target; m.items = pq.items;
+    if (pq.asOf) { m.priceAsOf = pq.asOf; m.itemsAsOf = pq.asOf; }
+    m.source = "phuquy";
+    const last = m.history[m.history.length - 1];
+    if (!last || last.buy !== pq.target.buy || last.sell !== pq.target.sell) m.history.push({ at: pq.asOf || new Date().toISOString(), buy: pq.target.buy, sell: pq.target.sell });
+    m.live.pq = { via: pq.via, checked: pq.checked };
+  }
+  const w = live.world;
+  if (w) {
+    const prev = m.world || {};
+    // VND conversion: Phú Quý's own reference rate (VNĐ per USD/oz), from the live board or the snapshot.
+    let perOz = pq && pq.refUsd > 0 && pq.refVndKg > 0 ? pq.refVndKg / pq.refUsd : (Number(prev.usdPerOz) > 0 && Number(prev.vndPerKg) > 0 ? Number(prev.vndPerKg) / Number(prev.usdPerOz) : null);
+    // Daily change: anchor to the previous close implied by the snapshot's change %.
+    let changePct = null;
+    if (Number(prev.usdPerOz) > 0 && Number.isFinite(Number(prev.changePct)) && prev.changePct !== null) {
+      const prevClose = Number(prev.usdPerOz) / (1 + Number(prev.changePct) / 100);
+      changePct = ((w.bid - prevClose) / prevClose) * 100;
+    }
+    m.world = { ...prev, usdPerOz: Math.round(w.bid * 100) / 100, ask: w.ask, changePct, asOf: w.at,
+      source: `Swissquote (bid, ${w.via})`, vndPerKg: perOz ? Math.round(w.bid * perOz) : prev.vndPerKg,
+      note: perOz ? `Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈${fmtInt(perOz / 32.1507466)} ₫/USD), trước thuế và phí nhập khẩu` : prev.note };
+    const lw = m.worldHistory[m.worldHistory.length - 1];
+    if (!lw || Math.abs(lw.usd - m.world.usdPerOz) >= 0.01) m.worldHistory.push({ at: w.at, usd: m.world.usdPerOz });
+    m.live.world = { via: w.via, checked: w.checked };
+  }
+  state.market = m;
+  state.marketStatus = Number(m?.target?.buy) > 0 ? "ready" : "missing";
+  maybeEvaluateAlerts(); render();
+}
+
+function subscribeMarket() {
+  loadMarket(); pollWorld(); pollPhuQuy();
+  marketTimers.forEach(clearInterval);
+  marketTimers = [setInterval(loadMarket, JSON_EVERY), setInterval(pollWorld, WORLD_EVERY), setInterval(pollPhuQuy, PQ_EVERY)];
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { pollWorld(); pollPhuQuy(); loadMarket(); } });
+}
+function subscribeProfile() {
+  if (unsubProfile) unsubProfile();
+  unsubProfile = profileRef().onSnapshot((snap) => {
+    const d = snap.exists ? snap.data() : {};
+    state.profile = { alerts: Array.isArray(d.alerts) ? d.alerts : [], history: Array.isArray(d.history) ? d.history : [], lastEvaluatedKey: d.lastEvaluatedKey || null };
+    state.profileLoaded = true;
+    maybeEvaluateAlerts(); render();
+  }, () => { state.profileLoaded = true; render(); });
+}
+
+const localDownloads = {
+  async save({ filename, data }) {
+    const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+    const a = document.createElement("a"); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  },
+};
+
+/* ---------- đồng bộ theo tài khoản Google (Firebase) ----------
+   Bật khi repo có tệp firebase-config.js. Không có tệp → chạy như cũ (lưu trong trình duyệt). */
+const FB_VER = "10.12.2";
+const fbConfig = () => {
+  try { if (typeof firebaseConfig !== "undefined" && firebaseConfig?.apiKey) return firebaseConfig; } catch {}
+  return window.FIREBASE_CONFIG?.apiKey ? window.FIREBASE_CONFIG : null;
+};
+const loadScript = (src) => new Promise((ok, bad) => {
+  const el = document.createElement("script"); el.src = src; el.onload = ok; el.onerror = () => bad(new Error(src));
+  document.head.appendChild(el);
+});
+const settle = (p, ms = 2500) => {
+  // Firestore ghi vào máy ngay rồi gửi lên sau; khi mất mạng thì không chờ server trả lời.
+  p.catch((e) => toast(writeErrorText(e)));
+  return Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
+};
+const wrapSnap = (s) => ({ id: s.id, exists: s.exists, data: () => s.data() });
+function cloudDoc(ref) {
+  return {
+    set: (data) => settle(ref.set(JSON.parse(JSON.stringify(data)))),
+    delete: () => settle(ref.delete()),
+    onSnapshot: (cb, err) => ref.onSnapshot((s) => cb(wrapSnap(s)), err),
+    collection: (name) => cloudCollection(ref.collection(name)),
+  };
+}
+function cloudCollection(ref) {
+  return {
+    doc: (id) => cloudDoc(id ? ref.doc(id) : ref.doc()),
+    onSnapshot: (cb, err) => ref.onSnapshot((s) => cb({ docs: s.docs.map(wrapSnap) }), err),
+  };
+}
+
+function startData() {
+  render();
+  subscribeCharts();
+  subscribeTx();
+  subscribeProfile();
+}
+function useLocal() {
+  db = localDb; state.uid = "local"; state.user = null;
+  startData();
+}
+async function useCloud(user) {
+  const fs = firebase.firestore();
+  db = { doc: (p) => cloudDoc(fs.doc(p)) };
+  state.uid = user.uid; state.user = { email: user.email, displayName: user.displayName, photoURL: user.photoURL };
+  const moved = await migrateLocal(fs, user.uid);
+  migrateLocalCharts(fs, user.uid);
+  startData();
+  return moved;
+}
+async function migrateLocalCharts(fs, uid) {
+  const s = lsRead(), pre = "data/users/local/profile/charts/";
+  const keys = Object.keys(s).filter((k) => k.startsWith(pre) && !k.slice(pre.length).includes("/"));
+  for (const k of keys) {
+    try {
+      const ref = fs.doc(`data/users/${uid}/profile`).collection("charts").doc(k.slice(pre.length));
+      if (!(await ref.get()).exists) await ref.set(JSON.parse(JSON.stringify(s[k])));
+    } catch { /* thử lại ở lần đăng nhập sau */ }
+  }
+}
+// Lần đầu đăng nhập: tài khoản chưa có giao dịch → tự chuyển giao dịch đang có trong máy lên.
+async function migrateLocal(fs, uid) {
+  const s = lsRead(), pre = "data/users/local/profile/tx/";
+  const local = Object.keys(s).filter((k) => k.startsWith(pre) && !k.slice(pre.length).includes("/"));
+  const localProfile = s["data/users/local/profile"];
+  if (!local.length && !localProfile?.alerts?.length) return 0;
+  try {
+    const base = fs.doc(`data/users/${uid}/profile`);
+    const [txSnap, profSnap] = await Promise.all([base.collection("tx").limit(1).get(), base.get()]);
+    let moved = 0;
+    if (txSnap.empty && local.length) {
+      for (let i = 0; i < local.length; i += 400) {
+        const batch = fs.batch();
+        for (const k of local.slice(i, i + 400)) { batch.set(base.collection("tx").doc(k.slice(pre.length)), JSON.parse(JSON.stringify(s[k]))); moved++; }
+        await batch.commit();
+      }
+    }
+    if (!profSnap.exists && localProfile?.alerts?.length) await base.set(JSON.parse(JSON.stringify(localProfile)));
+    return moved;
+  } catch { toast("Chưa chuyển được giao dịch trong máy lên tài khoản. Có thể dùng “Nhập từ app cũ”."); return -1; }
+}
+
+async function signIn() {
+  if (!window.firebase?.auth) { toast("Chưa tải được đăng nhập. Kiểm tra mạng rồi thử lại."); return; }
+  const auth = firebase.auth(), provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  try { await auth.signInWithPopup(provider); }
+  catch (e) {
+    const c = e?.code || "";
+    if (c === "auth/popup-blocked" || c === "auth/operation-not-supported-in-this-environment" || c === "auth/web-storage-unsupported") {
+      try { await auth.signInWithRedirect(provider); return; } catch (e2) { e = e2; }
+    }
+    if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return;
+    if (c === "auth/unauthorized-domain") toast("Tên miền chưa được cho phép trong Firebase (Authentication → Settings → Authorized domains).");
+    else toast("Chưa đăng nhập được. Thử lại sau.");
+  }
+}
+function accountSheet() {
+  const u = state.user || {};
+  openSheet(`<h3 id="sheet-title">Tài khoản đồng bộ</h3>
+    <p class="small muted" style="margin:6px 0 0">Đang đăng nhập: <b>${esc(u.email || u.displayName || "")}</b>. Giao dịch và cảnh báo tự đồng bộ trên mọi máy đăng nhập cùng tài khoản.</p>
+    <p class="small muted" style="margin:6px 0 0">Đăng xuất chỉ ngắt đồng bộ trên máy này, dữ liệu trên tài khoản vẫn còn nguyên.</p>
+    <div class="actions"><button class="btn" data-action="close">Đóng</button><button class="btn danger" data-action="signout">Đăng xuất</button></div>`, "[data-action=close]");
+}
+
+async function startCloud(cfg) {
+  state.cloud = "loading"; render();
+  try {
+    for (const m of ["app", "auth", "firestore"]) await loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`);
+    firebase.initializeApp(cfg);
+    const fs = firebase.firestore();
+    try { fs.settings({ ignoreUndefinedProperties: true, merge: true }); } catch {}
+    try { await fs.enablePersistence({ synchronizeTabs: true }); } catch {}
+    firebase.auth().getRedirectResult().catch(() => {});
+  } catch {
+    state.cloud = "off"; useLocal(); toast("Không tải được đồng bộ, đang dùng dữ liệu trong máy."); return;
+  }
+  let first = true;
+  firebase.auth().onAuthStateChanged(async (user) => {
+    const was = state.uid;
+    if (user) {
+      if (was === user.uid) return;
+      state.cloud = "signedin"; state.txStatus = "loading"; state.profileLoaded = false;
+      const moved = await useCloud(user);
+      if (moved > 0) toast(`Đã đăng nhập và chuyển ${moved} giao dịch từ máy này lên tài khoản`);
+      else if (!first && moved === 0) toast(`Đã đăng nhập · ${user.email || ""}`);
+    } else {
+      state.cloud = "signedout";
+      if (was !== "local") useLocal(); else render();
+      if (!first && was && was !== "local") toast("Đã đăng xuất. Dữ liệu trên tài khoản vẫn còn.");
+    }
+    first = false;
+  });
+}
+
+async function boot() {
+  try { const saved = localStorage.getItem("st-tab"); if (["market", "portfolio", "alerts"].includes(saved)) state.tab = saved; } catch {}
+  if (location.hash === "#danh-muc") state.tab = "portfolio";
+  if (location.hash === "#canh-bao") state.tab = "alerts";
+  state.boot = "ready";
+  state.downloads = localDownloads;
+  state.canEditMarket = false;
+  subscribeMarket();
+  loadChartArchive();
+  const cfg = location.protocol.startsWith("http") ? fbConfig() : null;
+  if (cfg) startCloud(cfg);
+  else useLocal();
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", (e) => {
+  const tab = e.target.closest("[data-tab]");
+  if (tab) { state.tab = tab.dataset.tab; try { localStorage.setItem("st-tab", state.tab); } catch {} render(); window.scrollTo(0, 0); return; }
+  const go = e.target.closest("[data-goto]");
+  if (go) { state.tab = go.dataset.goto; render(); window.scrollTo(0, 0); return; }
+  const f = e.target.closest("[data-filter]");
+  if (f) { state.filter = f.dataset.filter; render(); return; }
+  const ed = e.target.closest("[data-edit]");
+  if (ed) { const entry = state.tx.find((x) => x._id === ed.dataset.edit); if (entry) txForm(entry); return; }
+  const delA = e.target.closest("[data-del-alert]");
+  if (delA) {
+    const next = cloneProfile(); next.alerts = next.alerts.filter((a) => a.id !== delA.dataset.delAlert);
+    writeProfile(next).then(() => toast("Đã xóa cảnh báo"), (err) => toast(writeErrorText(err))); return;
+  }
+  const act = e.target.closest("[data-action]");
+  if (!act) return;
+  const a = act.dataset.action;
+  if (a === "close") closeSheet();
+  else if (a === "add") txForm(null);
+  else if (a === "price") priceForm();
+  else if (a === "import") importForm();
+  else if (a === "export") exportJson();
+  else if (a === "retry-tx") subscribeTx();
+  else if (a === "signin") signIn();
+  else if (a === "account") { if (state.cloud === "signedin") accountSheet(); else signIn(); }
+  else if (a === "signout") { closeSheet(); firebase.auth().signOut().catch(() => {}); }
+  else if (a === "add-alert") alertForm(null);
+  else if (a === "alert-breakeven") alertForm({ kind: "buy_above", threshold: Math.round(calculatePortfolio(state.tx, buyback()).avgPerLuong) });
+  else if (a === "ask-delete") { const id = $("#tx-form")?.dataset.id; const entry = state.tx.find((x) => x._id === id); if (entry) askDelete(entry); }
+});
+document.addEventListener("change", (e) => {
+  const tg = e.target.closest("[data-toggle-alert]");
+  if (!tg) return;
+  const next = cloneProfile();
+  const al = next.alerts.find((x) => x.id === tg.dataset.toggleAlert);
+  if (!al) return;
+  al.enabled = tg.checked; if (!al.enabled) al.triggered = false;
+  evaluateAlertsInto(next, true);
+  writeProfile(next).catch((err) => toast(writeErrorText(err)));
+});
+
+boot();
+</script>
+
+</body></html>
