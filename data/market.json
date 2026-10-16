@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-10-16T10:57:15Z",
+ "fetchedAt": "2026-10-16T11:22:25Z",
  "history": [
   {
    "at": "2026-10-05T18:27:00+07:00",
@@ -305,32 +305,37 @@
    "at": "2026-10-16T17:54:00+07:00",
    "buy": 2015000,
    "sell": 2077000
+  },
+  {
+   "at": "2026-10-16T18:22:00+07:00",
+   "buy": 2021000,
+   "sell": 2084000
   }
  ],
  "items": [
   {
    "type": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2015000,
-   "sell": 2077000
+   "buy": 2021000,
+   "sell": 2084000
   },
   {
    "type": "BẠC THỎI PHÚ QUÝ 999 10 LƯỢNG, 5 LƯỢNG",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2015000,
-   "sell": 2077000
+   "buy": 2021000,
+   "sell": 2084000
   },
   {
    "type": "ĐỒNG BẠC MỸ NGHỆ PHÚ QUÝ 999",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 2015000,
-   "sell": 2371000
+   "buy": 2021000,
+   "sell": 2378000
   },
   {
    "type": "BẠC THỎI PHÚ QUÝ 999 1KILO",
    "unit": "VNĐ/KG",
-   "buy": 53733199,
-   "sell": 55386528
+   "buy": 53893199,
+   "sell": 55573194
   },
   {
    "type": "BẠC 999 (MIẾNG - THANH - THỎI)",
@@ -339,20 +344,20 @@
    "sell": null
   }
  ],
- "itemsAsOf": "2026-10-16T17:54:00+07:00",
- "priceAsOf": "2026-10-16T17:54:00+07:00",
+ "itemsAsOf": "2026-10-16T18:22:00+07:00",
+ "priceAsOf": "2026-10-16T18:22:00+07:00",
  "source": "phuquy",
  "target": {
   "name": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
-  "buy": 2015000,
-  "sell": 2077000
+  "buy": 2021000,
+  "sell": 2084000
  },
  "world": {
-  "usdPerOz": 57.61,
-  "changePct": 0.53,
-  "asOf": "2026-10-16T06:56:00-04:00",
+  "usdPerOz": 57.77,
+  "changePct": 0.82,
+  "asOf": "2026-10-16T07:21:00-04:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 48306330,
+  "vndPerKg": 48437143,
   "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.080 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
@@ -991,6 +996,10 @@
   {
    "at": "2026-10-16T06:56:00-04:00",
    "usd": 57.61
+  },
+  {
+   "at": "2026-10-16T07:21:00-04:00",
+   "usd": 57.77
   }
  ],
  "errors": []
