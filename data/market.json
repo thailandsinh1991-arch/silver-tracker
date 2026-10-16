@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-10-16T00:13:23Z",
+ "fetchedAt": "2026-10-16T01:04:28Z",
  "history": [
   {
    "at": "2026-10-05T18:27:00+07:00",
@@ -268,11 +268,11 @@
   "sell": 2068000
  },
  "world": {
-  "usdPerOz": 57.06,
-  "changePct": -0.41,
-  "asOf": "2026-10-15T20:12:00-04:00",
+  "usdPerOz": 57.1,
+  "changePct": -0.35,
+  "asOf": "2026-10-15T21:04:00-04:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 47807633,
+  "vndPerKg": 47837805,
   "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.060 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
@@ -843,6 +843,10 @@
   {
    "at": "2026-10-15T20:12:00-04:00",
    "usd": 57.06
+  },
+  {
+   "at": "2026-10-15T21:04:00-04:00",
+   "usd": 57.1
   }
  ],
  "errors": []
