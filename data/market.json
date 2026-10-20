@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-10-20T10:57:35Z",
+ "fetchedAt": "2026-10-20T11:23:03Z",
  "history": [
   {
    "at": "2026-10-05T18:27:00+07:00",
@@ -460,32 +460,37 @@
    "at": "2026-10-20T17:20:00+07:00",
    "buy": 1966000,
    "sell": 2027000
+  },
+  {
+   "at": "2026-10-20T18:10:00+07:00",
+   "buy": 1970000,
+   "sell": 2031000
   }
  ],
  "items": [
   {
    "type": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 1966000,
-   "sell": 2027000
+   "buy": 1970000,
+   "sell": 2031000
   },
   {
    "type": "BẠC THỎI PHÚ QUÝ 999 10 LƯỢNG, 5 LƯỢNG",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 1966000,
-   "sell": 2027000
+   "buy": 1970000,
+   "sell": 2031000
   },
   {
    "type": "ĐỒNG BẠC MỸ NGHỆ PHÚ QUÝ 999",
    "unit": "VNĐ/LƯỢNG",
-   "buy": 1966000,
-   "sell": 2313000
+   "buy": 1970000,
+   "sell": 2318000
   },
   {
    "type": "BẠC THỎI PHÚ QUÝ 999 1KILO",
    "unit": "VNĐ/KG",
-   "buy": 52426536,
-   "sell": 54053198
+   "buy": 52533202,
+   "sell": 54159865
   },
   {
    "type": "BẠC 999 (MIẾNG - THANH - THỎI)",
@@ -494,27 +499,23 @@
    "sell": null
   }
  ],
- "itemsAsOf": "2026-10-20T17:20:00+07:00",
- "priceAsOf": "2026-10-20T17:20:00+07:00",
+ "itemsAsOf": "2026-10-20T18:10:00+07:00",
+ "priceAsOf": "2026-10-20T18:10:00+07:00",
  "source": "phuquy",
  "target": {
   "name": "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG",
-  "buy": 1966000,
-  "sell": 2027000
+  "buy": 1970000,
+  "sell": 2031000
  },
  "world": {
-  "usdPerOz": 57.07,
-  "changePct": 0.17,
-  "asOf": "2026-10-20T06:57:00-04:00",
+  "usdPerOz": 57.1,
+  "changePct": 0.23,
+  "asOf": "2026-10-20T07:22:00-04:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 47814338,
+  "vndPerKg": 47844490,
   "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.060 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
-  {
-   "at": "2026-10-08T05:49:00-04:00",
-   "usd": 58.76
-  },
   {
    "at": "2026-10-08T06:44:00-04:00",
    "usd": 58.42
@@ -1470,9 +1471,11 @@
   {
    "at": "2026-10-20T06:57:00-04:00",
    "usd": 57.07
+  },
+  {
+   "at": "2026-10-20T07:22:00-04:00",
+   "usd": 57.1
   }
  ],
- "errors": [
-  "phuquy: TimeoutError: The read operation timed out"
- ]
+ "errors": []
 }
