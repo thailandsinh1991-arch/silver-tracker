@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-10-20T10:22:30Z",
+ "fetchedAt": "2026-10-20T10:57:35Z",
  "history": [
   {
    "at": "2026-10-05T18:27:00+07:00",
@@ -503,18 +503,14 @@
   "sell": 2027000
  },
  "world": {
-  "usdPerOz": 56.98,
-  "changePct": 0.0,
-  "asOf": "2026-10-20T06:21:00-04:00",
+  "usdPerOz": 57.07,
+  "changePct": 0.17,
+  "asOf": "2026-10-20T06:57:00-04:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 47738934,
+  "vndPerKg": 47814338,
   "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈26.060 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
-  {
-   "at": "2026-10-08T04:23:00-04:00",
-   "usd": 58.87
-  },
   {
    "at": "2026-10-08T05:49:00-04:00",
    "usd": 58.76
@@ -1470,7 +1466,13 @@
   {
    "at": "2026-10-20T06:21:00-04:00",
    "usd": 56.98
+  },
+  {
+   "at": "2026-10-20T06:57:00-04:00",
+   "usd": 57.07
   }
  ],
- "errors": []
+ "errors": [
+  "phuquy: TimeoutError: The read operation timed out"
+ ]
 }
