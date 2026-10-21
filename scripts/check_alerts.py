@@ -62,7 +62,7 @@ def vnd(n):
 
 
 def usd(n):
-    return f"{n:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + " USD/oz"
+    return f"{n:.2f} USD/oz"
 
 
 def fmt_time(iso):

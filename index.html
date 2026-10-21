@@ -294,7 +294,9 @@ const ALERT_KINDS = {
   world_below: { label: "Giá thế giới ≤", field: "world", dir: -1 },
 };
 const isWorldKind = (kind) => ALERT_KINDS[kind]?.field === "world";
-const fmtUsd = (n) => `${Number(n).toLocaleString("vi-VN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD/oz`;
+// Giá USD viết bằng dấu chấm thập phân (57.50), theo cách giới giao dịch và các trang giá quốc tế vẫn dùng.
+const usd2 = (n) => Number(n).toFixed(2);
+const fmtUsd = (n) => `${usd2(n)} USD/oz`;
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -539,11 +541,11 @@ function worldHero(m) {
   const premium = perLuong && t && Number(t.buy) > 0 ? Number(t.buy) - perLuong : null;
   return `<div class="card world">
     <div class="row"><div class="eyebrow">Giá bạc thế giới · XAG/USD</div>${hasChg ? `<span class="pl-chip ${chg >= 0 ? "up" : "down"}">${chg >= 0 ? "▲ +" : "▼ −"}${Math.abs(chg).toFixed(2).replace(".", ",")}%</span>` : ""}</div>
-    <div class="world-main"><span class="world-usd num">${fmtNum(w.usdPerOz, 2)}</span><span class="world-unit">USD/oz</span></div>
+    <div class="world-main"><span class="world-usd num">${usd2(w.usdPerOz)}</span><span class="world-unit">USD/oz</span></div>
     ${perLuong ? `<div class="world-vnd"><span class="num">≈ ${fmtInt(perLuong)}</span><span class="muted"> ₫/lượng</span><span class="tiny muted"> · ${fmtInt(w.vndPerKg)} ₫/kg</span></div>` : ""}
     <div class="status" style="margin-top:8px"><span class="muted">${esc(w.asOf ? "Cập nhật " + fmtTime(w.asOf) : "")}${w.source ? " · Nguồn: " + esc(w.source) : ""}</span></div>
     ${premium != null ? `<p class="tiny muted" style="margin:6px 0 0">Giá thu mua Phú Quý đang ${premium >= 0 ? "cao hơn" : "thấp hơn"} giá thế giới quy đổi <span class="num">${fmtInt(Math.abs(premium))} ₫/lượng</span>. ${esc(w.note || "Giá quy đổi trước thuế và phí nhập khẩu")}.</p>` : ""}
-    ${sparkline(m.worldHistory, "usd", (v) => fmtNum(v, 2), " USD", "giá thế giới")}
+    ${sparkline(m.worldHistory, "usd", (v) => usd2(v), " USD", "giá thế giới")}
     <div style="margin-top:10px">${syncLine(m)}</div>
   </div>`;
 }
@@ -1244,7 +1246,7 @@ function alertForm(preset) {
     const world = isWorldKind($("#a-kind").value);
     const th = world ? parseDec($("#a-th").value) : parseMoney($("#a-th").value);
     if (!(th > 0)) { $("#a-err").textContent = "Nhập mức giá."; return; }
-    if (world && th > 1000) { $("#a-err").textContent = "Giá thế giới tính theo USD/oz, ví dụ 58,5."; return; }
+    if (world && th > 1000) { $("#a-err").textContent = "Giá thế giới tính theo USD/oz, ví dụ 58.5."; return; }
     const a = { id: `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind: $("#a-kind").value, threshold: world ? Math.round(th * 100) / 100 : th, enabled: true, triggered: false, call: $("#a-call").checked, createdAt: new Date().toISOString() };
     const next = cloneProfile();
     next.alerts.push(a);
