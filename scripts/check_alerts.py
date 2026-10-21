@@ -106,7 +106,7 @@ class Telegram:
 
 def call(username, text):
     """Cuộc gọi Telegram đọc nội dung bằng giọng nói (CallMeBot, miễn phí cho cá nhân)."""
-    url = "http://api.callmebot.com/start.php?" + urllib.parse.urlencode(
+    url = "https://api.callmebot.com/start.php?" + urllib.parse.urlencode(
         {"user": "@" + username.lstrip("@"), "text": text[:250], "lang": CALL_LANG, "rpt": "2"})
     status, body = http_text(url, timeout=90)
     import re
