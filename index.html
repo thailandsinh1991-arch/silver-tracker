@@ -841,11 +841,12 @@ function notifyCard() {
   const linked = st.chatId && st.chatFor === String(s.telegramUsername).replace(/^@/, "").toLowerCase();
   const rows = [
     ["Tài khoản Telegram", `@${esc(String(s.telegramUsername).replace(/^@/, ""))}`],
-    ["Tin nhắn", !s.telegramOn ? "Đang tắt" : linked ? `<span class="up">Đã liên kết</span>` : `<span class="warn">Chờ liên kết: mở bot${bot ? ` @${esc(bot)}` : ""} và gửi /start</span>`],
+    ["Tin nhắn", !s.telegramOn ? "Đang tắt" : linked ? `<span class="up">Đã liên kết</span>` : `<span class="warn">Chờ liên kết: mở bot${bot ? ` @${esc(bot)}` : ""}, gõ /start rồi gửi</span>`],
     ["Gọi điện", s.callOn ? "Bật cho cảnh báo đánh dấu “gọi điện”" : "Đang tắt"],
     ["Lần kiểm tra gần nhất", st.lastCheckAt ? esc(fmtTime(st.lastCheckAt)) : "Chưa chạy"],
   ];
   h += `<div class="metrics" style="margin-top:10px">${rows.map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v" style="font-family:var(--font-ui);font-weight:500">${v}</span></div>`).join("")}</div>`;
+  if (st.lastCallReply) h += `<p class="tiny muted" style="margin:10px 0 0">Phản hồi dịch vụ gọi điện lúc ${esc(fmtTime(st.lastCallAt))}: “${esc(st.lastCallReply)}”</p>`;
   if (st.lastError) h += `<div class="notice warn" style="margin-top:10px">${I.alert}<div class="grow small">${esc(st.lastError)}</div></div>`;
   return h + `</div>`;
 }

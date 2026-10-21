@@ -37,6 +37,7 @@ KINDS = {
     "world_below": ("world", -1, "Giá bạc thế giới"),
 }
 CALL_LANG = os.environ.get("CALL_LANG", "vi-VN-Standard-A")
+LAST_CALL = {}
 
 
 def log(*a):
@@ -112,6 +113,7 @@ def call(username, text):
     import re
     plain = " ".join(re.sub(r"<[^>]+>", " ", body).split())[:200]
     log("CallMeBot trả lời:", plain)
+    LAST_CALL["reply"] = plain
     if status != 200 or "not authorized" in plain.lower() or "not allowed" in plain.lower():
         raise RuntimeError(plain)
 
@@ -218,7 +220,10 @@ def main():
             st_alerts[aid] = "on" if hit else "off"
 
         new_state["alerts"] = st_alerts
-        new_state["lastError"] = errors[-1] if errors else ""
+        new_state["lastError"] = " · ".join(dict.fromkeys(errors)) if errors else ""
+        if LAST_CALL.get("reply"):
+            new_state["lastCallReply"] = LAST_CALL.pop("reply")[:200]
+            new_state["lastCallAt"] = now
         state_ref.set(new_state, merge=True)
         log(f"[{uid[:6]}] cảnh báo kích hoạt: {fired}{' · lỗi: ' + errors[-1] if errors else ''}")
     return 0
