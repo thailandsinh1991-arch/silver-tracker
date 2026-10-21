@@ -290,7 +290,11 @@ const ALERT_KINDS = {
   buy_below: { label: "Giá thu mua ≤", field: "buy", dir: -1 },
   sell_above: { label: "Giá bán ra ≥", field: "sell", dir: 1 },
   sell_below: { label: "Giá bán ra ≤", field: "sell", dir: -1 },
+  world_above: { label: "Giá thế giới ≥", field: "world", dir: 1 },
+  world_below: { label: "Giá thế giới ≤", field: "world", dir: -1 },
 };
+const isWorldKind = (kind) => ALERT_KINDS[kind]?.field === "world";
+const fmtUsd = (n) => `${Number(n).toLocaleString("vi-VN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD/oz`;
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -803,14 +807,81 @@ function txCard(e) {
 
 function alertText(a) {
   const k = ALERT_KINDS[a.kind];
-  return `${k ? k.label : a.kind} ${fmtInt(a.threshold)} ₫`;
+  return `${k ? k.label : a.kind} ${isWorldKind(a.kind) ? fmtUsd(a.threshold) : fmtInt(a.threshold) + " ₫"}${a.call ? " · gọi điện" : ""}`;
+}
+
+/* ---------- nhận cảnh báo qua Telegram / cuộc gọi ----------
+   App ghi cài đặt vào profile/notify/settings; GitHub Actions (scripts/check_alerts.py) kiểm tra giá mỗi 15 phút,
+   gửi tin nhắn / gọi điện và ghi trạng thái vào profile/notify/state. */
+const notify = { settings: null, state: null, loaded: false, bot: null, unsub: null };
+function subscribeNotify() {
+  if (notify.unsub) notify.unsub();
+  notify.loaded = false; notify.settings = null; notify.state = null;
+  try {
+    notify.unsub = profileRef().collection("notify").onSnapshot((snap) => {
+      for (const d of snap.docs) { if (d.id === "settings") notify.settings = d.data() || null; if (d.id === "state") notify.state = d.data() || null; }
+      notify.loaded = true;
+      if (state.tab === "alerts") render();
+    }, () => { notify.loaded = true; });
+  } catch { notify.loaded = true; }
+}
+async function loadNotifyPublic() {
+  try { const r = await fetch(repoUrl("data/notify.json") + "?t=" + Date.now(), { cache: "no-store" }); if (r.ok) notify.bot = (await r.json()).telegramBot || null; } catch {}
+}
+function notifyCard() {
+  const s = notify.settings || {}, st = notify.state || {};
+  const bot = notify.bot;
+  let h = `<div class="card"><div class="row"><div class="eyebrow">Nhận cảnh báo qua Telegram</div>${state.user ? `<button class="btn" data-action="notify-settings">${s.telegramUsername ? "Sửa" : "Cài đặt"}</button>` : ""}</div>`;
+  if (!state.user) {
+    return h + `<p class="small muted" style="margin:10px 0 0">Đăng nhập Google để nhận tin nhắn và cuộc gọi khi giá chạm mức, kể cả lúc không mở app. Máy chủ kiểm tra giá chỉ đọc được cảnh báo lưu theo tài khoản.</p></div>`;
+  }
+  if (!s.telegramUsername) {
+    return h + `<p class="small muted" style="margin:10px 0 0">Chưa cài đặt. Khi bật, máy chủ kiểm tra giá mỗi 15 phút (07:00–22:45) và gửi tin nhắn Telegram, gọi điện cho cảnh báo bạn đánh dấu “gọi điện”, kể cả khi bạn không mở app.</p></div>`;
+  }
+  const linked = st.chatId && st.chatFor === String(s.telegramUsername).replace(/^@/, "").toLowerCase();
+  const rows = [
+    ["Tài khoản Telegram", `@${esc(String(s.telegramUsername).replace(/^@/, ""))}`],
+    ["Tin nhắn", !s.telegramOn ? "Đang tắt" : linked ? `<span class="up">Đã liên kết</span>` : `<span class="warn">Chờ liên kết: mở bot${bot ? ` @${esc(bot)}` : ""} và gửi /start</span>`],
+    ["Gọi điện", s.callOn ? "Bật cho cảnh báo đánh dấu “gọi điện”" : "Đang tắt"],
+    ["Lần kiểm tra gần nhất", st.lastCheckAt ? esc(fmtTime(st.lastCheckAt)) : "Chưa chạy"],
+  ];
+  h += `<div class="metrics" style="margin-top:10px">${rows.map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v" style="font-family:var(--font-ui);font-weight:500">${v}</span></div>`).join("")}</div>`;
+  if (st.lastError) h += `<div class="notice warn" style="margin-top:10px">${I.alert}<div class="grow small">${esc(st.lastError)}</div></div>`;
+  return h + `</div>`;
+}
+function notifySettingsForm() {
+  const s = notify.settings || {}, bot = notify.bot;
+  openSheet(`<h3 id="sheet-title">Nhận cảnh báo qua Telegram</h3>
+    <ol class="small muted" style="margin:8px 0 0;padding-left:18px;display:grid;gap:5px">
+      <li>Mở Telegram, vào bot cảnh báo${bot ? ` <a href="https://t.me/${esc(bot)}" target="_blank" rel="noopener"><b>@${esc(bot)}</b></a>` : " của bạn"} và bấm <b>Start</b> (gửi /start).</li>
+      <li>Để nhận cuộc gọi: vào <a href="https://t.me/CallMeBot_txtbot" target="_blank" rel="noopener"><b>@CallMeBot_txtbot</b></a> và bấm <b>Start</b> một lần.</li>
+      <li>Nhập tên người dùng Telegram của bạn (Cài đặt → tên người dùng, bắt đầu bằng @).</li>
+    </ol>
+    <form id="n-form" novalidate>
+      <div class="field"><label for="n-user">Tên người dùng Telegram</label><input id="n-user" placeholder="@ten_cua_ban" value="${esc(s.telegramUsername ? "@" + String(s.telegramUsername).replace(/^@/, "") : "")}" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <label class="field" style="display:flex;gap:9px;align-items:center;cursor:pointer"><input type="checkbox" id="n-msg" style="width:auto" ${s.telegramOn !== false ? "checked" : ""}><span>Gửi tin nhắn Telegram cho mọi cảnh báo</span></label>
+      <label class="field" style="display:flex;gap:9px;align-items:center;cursor:pointer"><input type="checkbox" id="n-call" style="width:auto" ${s.callOn !== false ? "checked" : ""}><span>Gọi điện cho cảnh báo đánh dấu “gọi điện”</span></label>
+      <p class="tiny muted" style="margin:0">Máy chủ kiểm tra giá mỗi 15 phút từ 07:00 đến 22:45, có thể trễ vài phút. Mỗi lần giá vượt mức chỉ báo một lần.</p>
+      <div class="field"><span class="err" id="n-err" role="alert"></span></div>
+      <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="n-save">Lưu</button></div>
+    </form>`, "#n-user");
+  $("#n-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const u = $("#n-user").value.trim().replace(/^@/, "");
+    if (u && !/^[A-Za-z0-9_]{5,32}$/.test(u)) { $("#n-err").textContent = "Tên người dùng Telegram gồm 5–32 ký tự chữ, số hoặc gạch dưới."; return; }
+    $("#n-save").disabled = true;
+    try {
+      await profileRef().collection("notify").doc("settings").set({ telegramUsername: u, telegramOn: $("#n-msg").checked && !!u, callOn: $("#n-call").checked && !!u, updatedAt: new Date().toISOString() });
+      closeSheet(); toast(u ? "Đã lưu. Máy chủ sẽ liên kết ở lần kiểm tra tới." : "Đã tắt nhận cảnh báo");
+    } catch (err) { $("#n-save").disabled = false; $("#n-err").textContent = writeErrorText(err); }
+  });
 }
 
 function renderAlerts() {
   const el = $("#view-alerts");
   const alerts = state.profile.alerts || [];
   const hist = state.profile.history || [];
-  let html = `<h2 class="page">Cảnh báo giá</h2><p class="lede">Báo khi giá bạc miếng Phú Quý 1 lượng chạm mức bạn đặt. Cảnh báo hiện trong app mỗi khi có giá mới; app không gửi thông báo đẩy.</p><div class="stack">`;
+  let html = `<h2 class="page">Cảnh báo giá</h2><p class="lede">Báo khi giá Phú Quý (bạc miếng 1 lượng) hoặc giá bạc thế giới chạm mức bạn đặt: hiện trong app, và gửi Telegram hoặc gọi điện nếu bạn bật bên dưới.</p><div class="stack">`;
   if (state.txStatus === "signedout") {
     html += `<div class="card empty">${I.bell}<h3>Cần đăng nhập để lưu cảnh báo</h3></div></div>`;
     el.innerHTML = html; return;
@@ -833,6 +904,7 @@ function renderAlerts() {
   }
   html += `</div>`;
 
+  html += notifyCard();
   html += `<div class="card"><div class="eyebrow">Lịch sử cảnh báo</div>${hist.length ? `<div style="margin-top:4px">${hist.slice(0, 30).map((h) => `<div class="alert-item"><div class="grow"><div class="t">${esc(h.message)}</div><div class="tiny muted">${esc(fmtTime(h.at))}</div></div></div>`).join("")}</div>` : `<p class="small muted" style="margin:10px 0 0">Chưa có lần kích hoạt nào.</p>`}</div>`;
   html += `</div>`;
   el.innerHTML = html;
@@ -1149,19 +1221,30 @@ async function exportJson() {
 
 /* ---------- alerts ---------- */
 function alertForm(preset) {
+  const t = target(), w = worldUsd();
   openSheet(`<h3 id="sheet-title">Thêm cảnh báo</h3>
     <form id="a-form" novalidate>
       <div class="field"><label for="a-kind">Điều kiện</label><select id="a-kind">${Object.entries(ALERT_KINDS).map(([k, v]) => `<option value="${k}" ${preset?.kind === k ? "selected" : ""}>${v.label}</option>`).join("")}</select></div>
-      <div class="field"><label for="a-th">Mức giá (₫/lượng)</label><input id="a-th" inputmode="numeric" value="${preset?.threshold ? esc(fmtInt(preset.threshold)) : ""}" required>
-        <span class="hint">${buyback() != null ? `Hiện tại: thu mua ${money(target().buy)}, bán ra ${money(target().sell)}` : ""}</span></div>
+      <div class="field"><label for="a-th" id="a-th-lab">Mức giá</label><input id="a-th" inputmode="decimal" value="${preset?.threshold ? esc(fmtInt(preset.threshold)) : ""}" required>
+        <span class="hint" id="a-hint"></span></div>
+      <label class="field" style="display:flex;gap:9px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="a-call" style="width:auto;margin-top:3px"><span><b>Gọi điện khi chạm mức này</b><br><span class="hint">Gọi qua Telegram, đọc nội dung cảnh báo bằng giọng nói. Dùng cho mức quan trọng. Tin nhắn Telegram vẫn gửi cho mọi cảnh báo.</span></span></label>
       <div class="field"><span class="err" id="a-err" role="alert"></span></div>
       <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="a-save">Thêm cảnh báo</button></div>
     </form>`, "#a-th");
+  const sync = () => {
+    const world = isWorldKind($("#a-kind").value);
+    $("#a-th-lab").textContent = world ? "Mức giá (USD/oz)" : "Mức giá (₫/lượng)";
+    $("#a-hint").textContent = world ? (w ? `Hiện tại: ${fmtUsd(w)}` : "") : (buyback() != null ? `Hiện tại: thu mua ${money(t.buy)}, bán ra ${money(t.sell)}` : "");
+  };
+  $("#a-kind").addEventListener("change", () => { $("#a-th").value = ""; sync(); });
+  sync();
   $("#a-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const th = parseMoney($("#a-th").value);
+    const world = isWorldKind($("#a-kind").value);
+    const th = world ? parseDec($("#a-th").value) : parseMoney($("#a-th").value);
     if (!(th > 0)) { $("#a-err").textContent = "Nhập mức giá."; return; }
-    const a = { id: `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind: $("#a-kind").value, threshold: th, enabled: true, triggered: false, createdAt: new Date().toISOString() };
+    if (world && th > 1000) { $("#a-err").textContent = "Giá thế giới tính theo USD/oz, ví dụ 58,5."; return; }
+    const a = { id: `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind: $("#a-kind").value, threshold: world ? Math.round(th * 100) / 100 : th, enabled: true, triggered: false, call: $("#a-call").checked, createdAt: new Date().toISOString() };
     const next = cloneProfile();
     next.alerts.push(a);
     evaluateAlertsInto(next, true);
@@ -1171,7 +1254,8 @@ function alertForm(preset) {
   });
 }
 const cloneProfile = () => JSON.parse(JSON.stringify({ alerts: state.profile.alerts || [], history: state.profile.history || [], lastEvaluatedKey: state.profile.lastEvaluatedKey || null }));
-const priceKey = () => { const t = target(); return t ? `${state.market.priceAsOf}|${t.buy}|${t.sell}` : null; };
+const worldUsd = () => (Number(state.market?.world?.usdPerOz) > 0 ? Number(state.market.world.usdPerOz) : null);
+const priceKey = () => { const t = target(); return t ? `${state.market.priceAsOf}|${t.buy}|${t.sell}|${worldUsd() ?? ""}` : null; };
 
 /** Mutates p; returns true when something changed. */
 function evaluateAlertsInto(p, force) {
@@ -1185,12 +1269,13 @@ function evaluateAlertsInto(p, force) {
   for (const a of p.alerts) {
     const k = ALERT_KINDS[a.kind];
     if (!k || !a.enabled) continue;
-    const val = Number(t[k.field]);
+    const val = k.field === "world" ? Number(worldUsd()) : Number(t[k.field]);
     if (!(val > 0)) continue;
     const hit = k.dir > 0 ? val >= a.threshold : val <= a.threshold;
     if (hit && !a.triggered) {
       a.triggered = true; a.lastTriggeredAt = now; changed = true;
-      p.history.unshift({ at: now, alertId: a.id, message: `${k.field === "buy" ? "Giá thu mua" : "Giá bán ra"} ${fmtInt(val)} ₫ đã ${k.dir > 0 ? "chạm hoặc vượt" : "chạm hoặc xuống dưới"} ${fmtInt(a.threshold)} ₫` });
+      const fv = (n) => (k.field === "world" ? fmtUsd(n) : `${fmtInt(n)} ₫`);
+      p.history.unshift({ at: now, alertId: a.id, message: `${k.field === "buy" ? "Giá thu mua" : k.field === "sell" ? "Giá bán ra" : "Giá thế giới"} ${fv(val)} đã ${k.dir > 0 ? "chạm hoặc vượt" : "chạm hoặc xuống dưới"} ${fv(a.threshold)}` });
     } else if (!hit && a.triggered) { a.triggered = false; changed = true; }
   }
   p.history = p.history.slice(0, 50);
@@ -1448,6 +1533,7 @@ function cloudCollection(ref) {
 function startData() {
   render();
   subscribeCharts();
+  subscribeNotify();
   subscribeTx();
   subscribeProfile();
 }
@@ -1558,6 +1644,7 @@ async function boot() {
   state.canEditMarket = false;
   subscribeMarket();
   loadChartArchive();
+  loadNotifyPublic();
   const cfg = location.protocol.startsWith("http") ? fbConfig() : null;
   if (cfg) startCloud(cfg);
   else useLocal();
@@ -1591,6 +1678,7 @@ document.addEventListener("click", (e) => {
   else if (a === "account") { if (state.cloud === "signedin") accountSheet(); else signIn(); }
   else if (a === "signout") { closeSheet(); firebase.auth().signOut().catch(() => {}); }
   else if (a === "add-alert") alertForm(null);
+  else if (a === "notify-settings") notifySettingsForm();
   else if (a === "alert-breakeven") alertForm({ kind: "buy_above", threshold: Math.round(calculatePortfolio(state.tx, buyback()).avgPerLuong) });
   else if (a === "ask-delete") { const id = $("#tx-form")?.dataset.id; const entry = state.tx.find((x) => x._id === id); if (entry) askDelete(entry); }
 });
