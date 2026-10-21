@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       test_notify:
-        description: "Gửi tin nhắn Telegram (và cuộc gọi nếu bật) thử nghiệm"
+        description: "Gửi tin nhắn Telegram (và báo động ntfy nếu bật) thử nghiệm"
         type: boolean
         default: false
 
@@ -32,7 +32,7 @@ jobs:
       - name: Lấy giá mới
         run: python scripts/update_prices.py
 
-      - name: Kiểm tra cảnh báo, gửi Telegram / gọi điện
+      - name: Kiểm tra cảnh báo, gửi Telegram / báo động ntfy
         if: always()
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

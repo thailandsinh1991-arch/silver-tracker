@@ -24,11 +24,11 @@ Ngoài ra, mọi phiên bản cũ của các tệp đều còn trong lịch sử
 
 Chụp thủ công: tab **Actions** → **Lưu trữ biểu đồ giabac.vn** → **Run workflow**.
 
-## Cảnh báo qua Telegram và cuộc gọi
+## Cảnh báo qua Telegram và báo động ntfy
 
 Sau mỗi lần cập nhật giá, `scripts/check_alerts.py` so giá với cảnh báo của từng người (lưu trên Firebase theo tài khoản Google) và:
 - gửi tin nhắn qua bot Telegram của repo cho mọi cảnh báo vừa kích hoạt;
-- gọi điện qua Telegram (dịch vụ CallMeBot, miễn phí cho cá nhân) cho cảnh báo được đánh dấu “gọi điện”.
+- cho điện thoại reo qua ứng dụng [ntfy](https://ntfy.sh) (miễn phí, mã nguồn mở) với cảnh báo được đánh dấu “báo động”. Mỗi người có một mã kênh ngẫu nhiên do app tạo; mã kênh như mật khẩu, không chia sẻ.
 
 Mỗi cảnh báo chỉ báo một lần khi giá vượt mức; giá quay lại thì sẵn sàng báo lần sau.
 

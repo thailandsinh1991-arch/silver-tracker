@@ -809,12 +809,12 @@ function txCard(e) {
 
 function alertText(a) {
   const k = ALERT_KINDS[a.kind];
-  return `${k ? k.label : a.kind} ${isWorldKind(a.kind) ? fmtUsd(a.threshold) : fmtInt(a.threshold) + " ₫"}${a.call ? " · gọi điện" : ""}`;
+  return `${k ? k.label : a.kind} ${isWorldKind(a.kind) ? fmtUsd(a.threshold) : fmtInt(a.threshold) + " ₫"}${a.call ? " · báo động" : ""}`;
 }
 
 /* ---------- nhận cảnh báo qua Telegram / cuộc gọi ----------
    App ghi cài đặt vào profile/notify/settings; GitHub Actions (scripts/check_alerts.py) kiểm tra giá mỗi 15 phút,
-   gửi tin nhắn / gọi điện và ghi trạng thái vào profile/notify/state. */
+   gửi tin nhắn / báo động ntfy và ghi trạng thái vào profile/notify/state. */
 const notify = { settings: null, state: null, loaded: false, bot: null, unsub: null };
 function subscribeNotify() {
   if (notify.unsub) notify.unsub();
@@ -833,49 +833,70 @@ async function loadNotifyPublic() {
 function notifyCard() {
   const s = notify.settings || {}, st = notify.state || {};
   const bot = notify.bot;
-  let h = `<div class="card"><div class="row"><div class="eyebrow">Nhận cảnh báo qua Telegram</div>${state.user ? `<button class="btn" data-action="notify-settings">${s.telegramUsername ? "Sửa" : "Cài đặt"}</button>` : ""}</div>`;
+  let h = `<div class="card"><div class="row"><div class="eyebrow">Nhận cảnh báo qua Telegram và báo động</div>${state.user ? `<button class="btn" data-action="notify-settings">${s.telegramUsername || s.alarmOn ? "Sửa" : "Cài đặt"}</button>` : ""}</div>`;
   if (!state.user) {
     return h + `<p class="small muted" style="margin:10px 0 0">Đăng nhập Google để nhận tin nhắn và cuộc gọi khi giá chạm mức, kể cả lúc không mở app. Máy chủ kiểm tra giá chỉ đọc được cảnh báo lưu theo tài khoản.</p></div>`;
   }
-  if (!s.telegramUsername) {
-    return h + `<p class="small muted" style="margin:10px 0 0">Chưa cài đặt. Khi bật, máy chủ kiểm tra giá mỗi 15 phút (07:00–22:45) và gửi tin nhắn Telegram, gọi điện cho cảnh báo bạn đánh dấu “gọi điện”, kể cả khi bạn không mở app.</p></div>`;
+  if (!s.telegramUsername && !s.alarmOn) {
+    return h + `<p class="small muted" style="margin:10px 0 0">Chưa cài đặt. Khi bật, máy chủ kiểm tra giá mỗi 15 phút (07:00–22:45), gửi tin nhắn Telegram và cho điện thoại reo (ứng dụng ntfy) với cảnh báo bạn đánh dấu “báo động”, kể cả khi bạn không mở app.</p></div>`;
   }
   const linked = st.chatId && st.chatFor === String(s.telegramUsername).replace(/^@/, "").toLowerCase();
   const rows = [
     ["Tài khoản Telegram", `@${esc(String(s.telegramUsername).replace(/^@/, ""))}`],
     ["Tin nhắn", !s.telegramOn ? "Đang tắt" : linked ? `<span class="up">Đã liên kết</span>` : `<span class="warn">Chờ liên kết: mở bot${bot ? ` @${esc(bot)}` : ""}, gõ /start rồi gửi</span>`],
-    ["Gọi điện", s.callOn ? "Bật cho cảnh báo đánh dấu “gọi điện”" : "Đang tắt"],
+    ["Báo động reo (ntfy)", s.alarmOn && s.ntfyTopic ? "Bật cho cảnh báo đánh dấu “báo động”" : "Đang tắt"],
     ["Lần kiểm tra gần nhất", st.lastCheckAt ? esc(fmtTime(st.lastCheckAt)) : "Chưa chạy"],
   ];
   h += `<div class="metrics" style="margin-top:10px">${rows.map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v" style="font-family:var(--font-ui);font-weight:500">${v}</span></div>`).join("")}</div>`;
-  if (st.lastCallReply) h += `<p class="tiny muted" style="margin:10px 0 0">Phản hồi dịch vụ gọi điện lúc ${esc(fmtTime(st.lastCallAt))}: “${esc(st.lastCallReply)}”</p>`;
+  if (st.lastCallReply && s.alarmOn) h += `<p class="tiny muted" style="margin:10px 0 0">Báo động gần nhất lúc ${esc(fmtTime(st.lastCallAt))}: ${esc(st.lastCallReply)}</p>`;
   if (st.lastError) h += `<div class="notice warn" style="margin-top:10px">${I.alert}<div class="grow small">${esc(st.lastError)}</div></div>`;
   return h + `</div>`;
 }
+function newNtfyTopic() {
+  const a = new Uint8Array(12); crypto.getRandomValues(a);
+  return "silver-" + [...a].map((b) => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
+}
 function notifySettingsForm() {
   const s = notify.settings || {}, bot = notify.bot;
-  openSheet(`<h3 id="sheet-title">Nhận cảnh báo qua Telegram</h3>
-    <ol class="small muted" style="margin:8px 0 0;padding-left:18px;display:grid;gap:5px">
-      <li>Mở Telegram, vào bot cảnh báo${bot ? ` <a href="https://t.me/${esc(bot)}" target="_blank" rel="noopener"><b>@${esc(bot)}</b></a>` : " của bạn"} và bấm <b>Start</b> (gửi /start).</li>
-      <li>Để nhận cuộc gọi: vào <a href="https://t.me/CallMeBot_txtbot" target="_blank" rel="noopener"><b>@CallMeBot_txtbot</b></a> và bấm <b>Start</b> một lần.</li>
-      <li>Nhập tên người dùng Telegram của bạn (Cài đặt → tên người dùng, bắt đầu bằng @).</li>
+  const topic = s.ntfyTopic || newNtfyTopic();
+  openSheet(`<h3 id="sheet-title">Nhận cảnh báo</h3>
+    <div class="eyebrow" style="margin-top:12px">Tin nhắn Telegram</div>
+    <ol class="small muted" style="margin:6px 0 0;padding-left:18px;display:grid;gap:5px">
+      <li>Mở bot${bot ? ` <a href="https://t.me/${esc(bot)}" target="_blank" rel="noopener"><b>@${esc(bot)}</b></a>` : " cảnh báo của bạn"}, gõ <b>/start</b> rồi gửi.</li>
+      <li>Nhập tên người dùng Telegram của bạn (Cài đặt → Tên người dùng, bắt đầu bằng @).</li>
     </ol>
     <form id="n-form" novalidate>
       <div class="field"><label for="n-user">Tên người dùng Telegram</label><input id="n-user" placeholder="@ten_cua_ban" value="${esc(s.telegramUsername ? "@" + String(s.telegramUsername).replace(/^@/, "") : "")}" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
       <label class="field" style="display:flex;gap:9px;align-items:center;cursor:pointer"><input type="checkbox" id="n-msg" style="width:auto" ${s.telegramOn !== false ? "checked" : ""}><span>Gửi tin nhắn Telegram cho mọi cảnh báo</span></label>
-      <label class="field" style="display:flex;gap:9px;align-items:center;cursor:pointer"><input type="checkbox" id="n-call" style="width:auto" ${s.callOn !== false ? "checked" : ""}><span>Gọi điện cho cảnh báo đánh dấu “gọi điện”</span></label>
-      <p class="tiny muted" style="margin:0">Máy chủ kiểm tra giá mỗi 15 phút từ 07:00 đến 22:45, có thể trễ vài phút. Mỗi lần giá vượt mức chỉ báo một lần.</p>
+      <div class="eyebrow" style="margin-top:6px">Báo động reo (ứng dụng ntfy, miễn phí)</div>
+      <label class="field" style="display:flex;gap:9px;align-items:center;cursor:pointer"><input type="checkbox" id="n-alarm" style="width:auto" ${s.alarmOn !== false ? "checked" : ""}><span>Cho điện thoại reo với cảnh báo đánh dấu “báo động”</span></label>
+      <ol class="small muted" style="margin:0;padding-left:18px;display:grid;gap:5px">
+        <li>Cài ứng dụng <b>ntfy</b> từ CH Play hoặc App Store (biểu tượng chữ “ntfy”).</li>
+        <li>Mở ntfy, bấm <b>+</b> (Subscribe to topic), dán mã kênh dưới đây, bấm <b>Subscribe</b>.</li>
+        <li>Android: trong ntfy vào <b>Settings</b>, bật <b>Keep alerting for highest priority</b> để máy reo liên tục tới khi bạn tắt.</li>
+      </ol>
+      <div class="field"><label for="n-topic">Mã kênh ntfy của bạn (giữ riêng, như mật khẩu)</label>
+        <div style="display:flex;gap:6px"><input id="n-topic" value="${esc(topic)}" readonly style="flex:1;font-family:var(--font-num);font-size:13px"><button type="button" class="btn" id="n-copy">Sao chép</button></div></div>
+      <p class="tiny muted" style="margin:0">Máy chủ kiểm tra giá mỗi 15 phút từ 07:00 đến 22:45, có thể trễ vài phút. Mỗi lần giá vượt mức chỉ báo một lần. Cần wifi hoặc 4G.</p>
       <div class="field"><span class="err" id="n-err" role="alert"></span></div>
       <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="n-save">Lưu</button></div>
     </form>`, "#n-user");
+  $("#n-copy").addEventListener("click", async () => {
+    const v = $("#n-topic").value;
+    try { await navigator.clipboard.writeText(v); toast("Đã sao chép mã kênh"); }
+    catch { $("#n-topic").select(); toast("Hãy giữ ngón tay trên ô để sao chép"); }
+  });
   $("#n-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const u = $("#n-user").value.trim().replace(/^@/, "");
     if (u && !/^[A-Za-z0-9_]{5,32}$/.test(u)) { $("#n-err").textContent = "Tên người dùng Telegram gồm 5–32 ký tự chữ, số hoặc gạch dưới."; return; }
     $("#n-save").disabled = true;
     try {
-      await profileRef().collection("notify").doc("settings").set({ telegramUsername: u, telegramOn: $("#n-msg").checked && !!u, callOn: $("#n-call").checked && !!u, updatedAt: new Date().toISOString() });
-      closeSheet(); toast(u ? "Đã lưu. Máy chủ sẽ liên kết ở lần kiểm tra tới." : "Đã tắt nhận cảnh báo");
+      await profileRef().collection("notify").doc("settings").set({
+        telegramUsername: u, telegramOn: $("#n-msg").checked && !!u,
+        alarmOn: $("#n-alarm").checked, ntfyTopic: topic, updatedAt: new Date().toISOString(),
+      });
+      closeSheet(); toast("Đã lưu cài đặt nhận cảnh báo");
     } catch (err) { $("#n-save").disabled = false; $("#n-err").textContent = writeErrorText(err); }
   });
 }
@@ -884,7 +905,7 @@ function renderAlerts() {
   const el = $("#view-alerts");
   const alerts = state.profile.alerts || [];
   const hist = state.profile.history || [];
-  let html = `<h2 class="page">Cảnh báo giá</h2><p class="lede">Báo khi giá Phú Quý (bạc miếng 1 lượng) hoặc giá bạc thế giới chạm mức bạn đặt: hiện trong app, và gửi Telegram hoặc gọi điện nếu bạn bật bên dưới.</p><div class="stack">`;
+  let html = `<h2 class="page">Cảnh báo giá</h2><p class="lede">Báo khi giá Phú Quý (bạc miếng 1 lượng) hoặc giá bạc thế giới chạm mức bạn đặt: hiện trong app, và gửi Telegram hoặc cho điện thoại reo nếu bạn bật bên dưới.</p><div class="stack">`;
   if (state.txStatus === "signedout") {
     html += `<div class="card empty">${I.bell}<h3>Cần đăng nhập để lưu cảnh báo</h3></div></div>`;
     el.innerHTML = html; return;
@@ -1230,7 +1251,7 @@ function alertForm(preset) {
       <div class="field"><label for="a-kind">Điều kiện</label><select id="a-kind">${Object.entries(ALERT_KINDS).map(([k, v]) => `<option value="${k}" ${preset?.kind === k ? "selected" : ""}>${v.label}</option>`).join("")}</select></div>
       <div class="field"><label for="a-th" id="a-th-lab">Mức giá</label><input id="a-th" inputmode="decimal" value="${preset?.threshold ? esc(fmtInt(preset.threshold)) : ""}" required>
         <span class="hint" id="a-hint"></span></div>
-      <label class="field" style="display:flex;gap:9px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="a-call" style="width:auto;margin-top:3px"><span><b>Gọi điện khi chạm mức này</b><br><span class="hint">Gọi qua Telegram, đọc nội dung cảnh báo bằng giọng nói. Dùng cho mức quan trọng. Tin nhắn Telegram vẫn gửi cho mọi cảnh báo.</span></span></label>
+      <label class="field" style="display:flex;gap:9px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="a-call" style="width:auto;margin-top:3px"><span><b>Báo động reo khi chạm mức này</b><br><span class="hint">Điện thoại reo liên tục qua ứng dụng ntfy cho tới khi bạn tắt. Dùng cho mức quan trọng. Tin nhắn Telegram vẫn gửi cho mọi cảnh báo.</span></span></label>
       <div class="field"><span class="err" id="a-err" role="alert"></span></div>
       <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="a-save">Thêm cảnh báo</button></div>
     </form>`, "#a-th");

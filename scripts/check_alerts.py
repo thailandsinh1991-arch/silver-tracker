@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kiểm tra cảnh báo giá và gửi Telegram / gọi điện (chạy bởi GitHub Actions sau mỗi lần cập nhật giá).
+"""Kiểm tra cảnh báo giá và gửi Telegram / báo động ntfy (chạy bởi GitHub Actions sau mỗi lần cập nhật giá).
 
 Đọc:
   data/market.json                                   giá mới nhất (vừa cập nhật)
@@ -11,11 +11,12 @@ Ghi:
 
 Bí mật (GitHub Secrets): FIREBASE_SERVICE_ACCOUNT (JSON khoá dịch vụ), TELEGRAM_BOT_TOKEN.
 Thiếu bí mật → bỏ qua, không làm hỏng lần cập nhật giá.
-NOTIFY_TEST=1 → gửi tin nhắn (và cuộc gọi nếu bật) thử nghiệm cho mọi người đã cài đặt.
+NOTIFY_TEST=1 → gửi tin nhắn (và báo động ntfy nếu bật) thử nghiệm cho mọi người đã cài đặt.
 
 Mỗi cảnh báo chỉ báo MỘT lần mỗi khi giá vượt ngưỡng; giá quay lại thì sẵn sàng báo lần sau.
 """
 import json
+import re
 import os
 import sys
 import urllib.parse
@@ -36,7 +37,7 @@ KINDS = {
     "world_above": ("world", 1, "Giá bạc thế giới"),
     "world_below": ("world", -1, "Giá bạc thế giới"),
 }
-CALL_LANG = os.environ.get("CALL_LANG", "vi-VN-Standard-A")
+NTFY_URL = os.environ.get("NTFY_URL", "https://ntfy.sh/")
 LAST_CALL = {}
 
 
@@ -105,21 +106,17 @@ class Telegram:
             raise RuntimeError(r.get("description") or "sendMessage thất bại")
 
 
-def call(username, text):
-    """Cuộc gọi Telegram đọc nội dung bằng giọng nói (CallMeBot, miễn phí cho cá nhân)."""
-    url = "https://api.callmebot.com/start.php?" + urllib.parse.urlencode(
-        {"user": "@" + username.lstrip("@"), "text": text[:250], "lang": CALL_LANG, "rpt": "2"})
-    status, body = http_text(url, timeout=90)
-    import re
-    plain = " ".join(re.sub(r"<[^>]+>", " ", body).split())[:200]
-    log("CallMeBot trả lời:", plain)
-    LAST_CALL["reply"] = plain
-    low = plain.lower()
-    if "auth.php" in low or ("authoriz" in low and ("not" in low or "n't" in low or "fail" in low)):
-        raise RuntimeError("CallMeBot chưa được phép gọi cho @" + username.lstrip("@")
-                           + ": vào bot CallMeBot API gõ /start (sau khi đã đặt tên người dùng), hoặc mở api2.callmebot.com/txt/auth.php")
-    if status != 200 or "not allowed" in low or "error" in low[:40]:
-        raise RuntimeError(plain)
+def alarm(topic, title, text, test=False):
+    """Báo động reo qua ứng dụng ntfy (miễn phí, mã nguồn mở). Mức ưu tiên 5 = khẩn cấp."""
+    body = json.dumps({
+        "topic": topic, "title": title, "message": text, "priority": 5,
+        "tags": ["rotating_light"] if not test else ["white_check_mark"], "click": APP_URL,
+    }).encode("utf-8")
+    req = urllib.request.Request(NTFY_URL, data=body, headers={"Content-Type": "application/json", "User-Agent": "silver-tracker-alerts"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        reply = json.loads(r.read().decode("utf-8") or "{}")
+    LAST_CALL["reply"] = f"ntfy đã nhận (id {reply.get('id', '?')})"
+    return reply
 
 
 def main():
@@ -165,8 +162,9 @@ def main():
         st_alerts = dict(state.get("alerts") or {})
         new_state = {"lastCheckAt": now}
         username = (settings.get("telegramUsername") or "").strip().lstrip("@")
-        want_msg = bool(settings.get("telegramOn")) and username
-        want_call = bool(settings.get("callOn")) and username
+        want_msg = bool(settings.get("telegramOn")) and bool(username)
+        topic = (settings.get("ntfyTopic") or "").strip()
+        want_call = bool(settings.get("alarmOn")) and bool(re.fullmatch(r"[A-Za-z0-9_-]{12,64}", topic))
 
         chat_id = state.get("chatId") if state.get("chatFor") == username.lower() else None
         if want_msg and not chat_id:
@@ -187,18 +185,18 @@ def main():
             except Exception as e:  # noqa: BLE001
                 errors.append(f"Tin nhắn Telegram lỗi: {e}")
 
-        def place_call(text):
+        def place_call(title, text, test=False):
             if not want_call:
                 return
             try:
-                call(username, text)
+                alarm(topic, title, text, test)
             except Exception as e:  # noqa: BLE001
-                errors.append(f"Cuộc gọi lỗi: {e}")
+                errors.append(f"Báo động ntfy lỗi: {e}")
 
         if test:
             send_msg("✅ <b>Silver Tracker</b>: thử nghiệm thông báo thành công.\n"
                      f"Thu mua Phú Quý {vnd(values['buy'])}, thế giới {usd(values['world'])}.\n<a href=\"{APP_URL}\">Mở app</a>")
-            place_call("Silver Tracker. Đây là cuộc gọi thử nghiệm cảnh báo giá bạc.")
+            place_call("Silver Tracker: báo động thử", "Nếu máy đang reo, báo động giá bạc đã sẵn sàng. Bấm vào để tắt.", test=True)
             new_state["lastTestAt"] = now
 
         fired = 0
@@ -220,7 +218,7 @@ def main():
                 send_msg(f"🔔 <b>Cảnh báo giá bạc</b>\n{label}: <b>{f(val)}</b>\n{word} mức bạn đặt {f(th)}.\n"
                          f"Cập nhật {fmt_time(asof[field])}. <a href=\"{APP_URL}\">Mở app</a>")
                 if a.get("call"):
-                    place_call(f"Cảnh báo giá bạc. {label} {word} mức bạn đặt. Xem tin nhắn Telegram để biết chi tiết.")
+                    place_call(f"Cảnh báo giá bạc: {label}", f"{f(val)} {word} mức {f(th)}. Cập nhật {fmt_time(asof[field])}.")
             st_alerts[aid] = "on" if hit else "off"
 
         new_state["alerts"] = st_alerts
