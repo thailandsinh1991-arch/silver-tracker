@@ -114,7 +114,11 @@ def call(username, text):
     plain = " ".join(re.sub(r"<[^>]+>", " ", body).split())[:200]
     log("CallMeBot trả lời:", plain)
     LAST_CALL["reply"] = plain
-    if status != 200 or "not authorized" in plain.lower() or "not allowed" in plain.lower():
+    low = plain.lower()
+    if "auth.php" in low or ("authoriz" in low and ("not" in low or "n't" in low or "fail" in low)):
+        raise RuntimeError("CallMeBot chưa được phép gọi cho @" + username.lstrip("@")
+                           + ": vào bot CallMeBot API gõ /start (sau khi đã đặt tên người dùng), hoặc mở api2.callmebot.com/txt/auth.php")
+    if status != 200 or "not allowed" in low or "error" in low[:40]:
         raise RuntimeError(plain)
 
 
@@ -189,7 +193,7 @@ def main():
             try:
                 call(username, text)
             except Exception as e:  # noqa: BLE001
-                errors.append(f"Cuộc gọi lỗi (đã gửi /start cho @CallMeBot_txtbot chưa?): {e}")
+                errors.append(f"Cuộc gọi lỗi: {e}")
 
         if test:
             send_msg("✅ <b>Silver Tracker</b>: thử nghiệm thông báo thành công.\n"
