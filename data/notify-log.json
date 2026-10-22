@@ -1,5 +1,5 @@
 {
- "at": "2026-10-22T06:06:49Z",
+ "at": "2026-10-22T06:07:44Z",
  "users": [
   {
    "user": 1,
@@ -11,12 +11,12 @@
     "on": true,
     "hasUsername": true,
     "linked": true,
-    "sent": 0
+    "sent": 1
    },
    "alarm": {
     "on": true,
     "topicOk": true,
-    "sent": 0
+    "sent": 1
    },
    "alertsState": {
     "on": 1,
@@ -28,6 +28,6 @@
  "prices": {
   "buy": 1934000,
   "sell": 1994000,
-  "world": 56.23
+  "world": 56.24
  }
 }
