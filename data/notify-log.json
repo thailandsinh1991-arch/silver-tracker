@@ -1,10 +1,10 @@
 {
- "at": "2026-10-22T07:03:26Z",
+ "at": "2026-10-22T07:14:31Z",
  "users": [
   {
    "user": 1,
-   "alerts": 1,
-   "enabled": 1,
+   "alerts": 2,
+   "enabled": 2,
    "markedAlarm": 1,
    "fired": 0,
    "telegram": {
@@ -21,7 +21,7 @@
    "alertsState": {
     "on": 0,
     "pending": 0,
-    "off": 1
+    "off": 2
    },
    "errors": []
   }
@@ -29,6 +29,6 @@
  "prices": {
   "buy": 1926000,
   "sell": 1986000,
-  "world": 55.97
+  "world": 55.91
  }
 }
