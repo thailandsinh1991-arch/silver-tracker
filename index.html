@@ -170,6 +170,18 @@ td .pname { font-weight: 600; font-size: 12px; }
 .card.pf-down { border-color: color-mix(in srgb, var(--down) 55%, var(--line)); background: color-mix(in srgb, var(--down) 7%, var(--surface)); }
 .pl-big { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
 .pl-big .amt { font-family: var(--font-num); font-weight: 600; font-size: 16px; }
+.mbars { display: flex; align-items: flex-end; gap: 6px; height: 96px; margin-top: 8px; }
+.mb { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+.mb-col { flex: 1; width: 100%; max-width: 28px; display: flex; align-items: flex-end; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+.mb-col i { display: block; width: 100%; border-radius: 5px; } .mb-col i.pos { background: var(--up); } .mb-col i.neg { background: var(--down); }
+.mb span { font-size: 9.5px; color: var(--muted); font-family: var(--font-num); }
+.sale-list { display: grid; gap: 6px; margin-top: 8px; }
+.sale { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.sale summary { display: flex; gap: 8px; align-items: center; cursor: pointer; list-style: none; font-size: 12px; }
+.sale summary::-webkit-details-marker { display: none; }
+.sale .pl-val { font-family: var(--font-num); font-weight: 600; font-size: 12px; }
+.ri-list { display: grid; gap: 8px; margin-top: 10px; }
+.ri { border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; }
 .tx-note { margin-top: 5px; font-size: 11px; color: var(--muted); font-style: italic; overflow-wrap: anywhere; }
 
 .empty { text-align: center; padding: 30px 16px; display: grid; gap: 8px; justify-items: center; }
@@ -413,6 +425,94 @@ function txInfo(e) {
     price: legacy ? Number(e.giaMua) : Number(e.pricePerUnit),
     missingBrand: legacy || !String(e.brand || "").trim(),
   };
+}
+
+/* ---------- kết quả bán: giá vốn bình quân (như danh mục), thời gian nắm giữ theo mua trước – bán trước ---------- */
+function saleAnalysis(txs) {
+  const pools = new Map();
+  const sales = [];
+  for (const e of [...txs].sort(orderKey)) {
+    const t = normalizedTrade(e);
+    if (t.grams <= 0) continue;
+    const key = canonicalBrand(t.brand);
+    const day = parseDate(e.date) ?? 0;
+    const pool = pools.get(key) || { grams: 0, cost: 0, lots: [] };
+    pools.set(key, pool);
+    if (t.type === "buy") { pool.grams += t.grams; pool.cost += t.amount + t.fee; pool.lots.push({ grams: t.grams, day }); continue; }
+    if (t.grams > pool.grams + 0.0001) continue;
+    const avg = pool.grams > 0 ? pool.cost / pool.grams : 0;
+    const costSold = Math.round(avg * t.grams);
+    let left = t.grams, gramDays = 0, firstBuy = null;
+    while (left > 0.0001 && pool.lots.length) {
+      const lot = pool.lots[0], take = Math.min(lot.grams, left);
+      if (firstBuy == null) firstBuy = lot.day;
+      gramDays += take * Math.max(0, (day - lot.day) / 86400000);
+      lot.grams -= take; left -= take;
+      if (lot.grams <= 0.0001) pool.lots.shift();
+    }
+    pool.grams = Math.max(0, pool.grams - t.grams);
+    pool.cost = Math.max(0, pool.cost - costSold);
+    const net = t.amount - t.fee, pl = net - costSold;
+    const pct = costSold > 0 ? (pl / costSold) * 100 : null;
+    const days = Math.round(gramDays / t.grams);
+    const annual = pct != null && days >= 30 && pct > -100 ? (Math.pow(1 + pct / 100, 365 / days) - 1) * 100 : null;
+    const luong = t.grams / GRAMS.luong;
+    sales.push({
+      id: e._id, date: e.date, day, time: e.time || "", brand: t.brand, note: e.note || "",
+      grams: t.grams, luong, gross: t.amount, fee: t.fee, net, costSold, pl, pct, days, annual, firstBuy,
+      sellPerLuong: luong > 0 ? t.amount / luong : 0, costPerLuong: avg * GRAMS.luong,
+      worldUsd: Number(e.worldUsd) > 0 ? Number(e.worldUsd) : null,
+    });
+  }
+  return sales;
+}
+function saleSummary(sales) {
+  const s = { count: sales.length, luong: 0, gross: 0, fee: 0, net: 0, costSold: 0, pl: 0, gramDays: 0, grams: 0, byMonth: new Map(), byYear: new Map(), best: null, worst: null };
+  for (const x of sales) {
+    s.luong += x.luong; s.gross += x.gross; s.fee += x.fee; s.net += x.net; s.costSold += x.costSold; s.pl += x.pl;
+    s.gramDays += x.days * x.grams; s.grams += x.grams;
+    const [, mo, y] = x.date.split("/");
+    for (const [map, k] of [[s.byMonth, `${y}-${mo}`], [s.byYear, y]]) {
+      const r = map.get(k) || { pl: 0, net: 0, luong: 0, count: 0 };
+      r.pl += x.pl; r.net += x.net; r.luong += x.luong; r.count += 1; map.set(k, r);
+    }
+    if (x.pct != null && (!s.best || x.pct > s.best.pct)) s.best = x;
+    if (x.pct != null && (!s.worst || x.pct < s.worst.pct)) s.worst = x;
+  }
+  s.pct = s.costSold > 0 ? (s.pl / s.costSold) * 100 : null;
+  s.days = s.grams > 0 ? Math.round(s.gramDays / s.grams) : 0;
+  s.annual = s.pct != null && s.days >= 30 && s.pct > -100 ? (Math.pow(1 + s.pct / 100, 365 / s.days) - 1) * 100 : null;
+  return s;
+}
+const pctText = (p, d = 2) => (p == null ? "—" : `${p >= 0 ? "+" : "−"}${Math.abs(p).toFixed(d).replace(".", ",")}%`);
+function holdText(days) {
+  if (!(days > 0)) return "trong ngày";
+  if (days < 31) return `${days} ngày`;
+  const y = Math.floor(days / 365), mo = Math.floor((days % 365) / 30), d = (days % 365) % 30;
+  return [y && `${y} năm`, mo && `${mo} tháng`, !y && d && `${d} ngày`].filter(Boolean).join(" ");
+}
+/* Giá thế giới tại thời điểm bán: lấy từ giao dịch (lưu khi bán trong ngày) hoặc từ kho archive/gia-the-gioi.csv. */
+const worldHist = { rows: null, loading: false };
+async function loadWorldHistory() {
+  if (worldHist.rows || worldHist.loading) return;
+  worldHist.loading = true;
+  try {
+    const r = await fetch(repoUrl("archive/gia-the-gioi.csv") + "?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) {
+      worldHist.rows = (await r.text()).split("\n").slice(1).map((l) => l.split(",")).map(([at, usd]) => [Date.parse(at), Number(usd)])
+        .filter(([t, u]) => Number.isFinite(t) && u > 0).sort((a, b) => a[0] - b[0]);
+      if (state.tab === "portfolio") render();
+    }
+  } catch {} finally { worldHist.loading = false; }
+}
+function worldAtSale(x) {
+  if (x.worldUsd) return x.worldUsd;
+  if (!worldHist.rows?.length) return null;
+  const [h, m] = /^\d{2}:\d{2}$/.test(x.time) ? x.time.split(":").map(Number) : [17, 0];
+  const at = x.day + (h * 60 + m - 7 * 60) * 60000; // giờ Việt Nam → UTC
+  let best = null;
+  for (const [t, u] of worldHist.rows) { if (t <= at) best = [t, u]; else break; }
+  return best && at - best[0] < 4 * 86400000 ? best[1] : null;
 }
 
 /* ---------- state ---------- */
@@ -734,7 +834,14 @@ function renderPortfolio() {
       ${s.unrealized != null ? `<div class="row"><span class="k">Lãi/lỗ chưa thực hiện (đang giữ)</span><span class="v ${s.unrealized >= 0 ? "up" : "down"}">${signedMoney(s.unrealized)}</span></div>` : ""}
       <div class="row"><span class="k">Lãi/lỗ đã thực hiện</span><span class="v ${s.realized >= 0 ? "up" : "down"}">${signedMoney(s.realized)}</span></div>
       ${s.progress != null ? `<div style="display:grid;gap:6px;margin-top:3px"><div class="row"><span class="k">Tiến độ hòa vốn theo giá thu mua</span><span class="v">${(s.progress * 100).toFixed(1).replace(".", ",")}%</span></div><div class="bar"><i style="width:${(s.progress * 100).toFixed(1)}%"></i></div></div>` : ""}
+      ${state.txStatus === "ready" ? `<div class="btn-row" style="margin-top:4px"><button class="btn" data-action="sell-sim">Tính thử nếu bán</button></div>` : ""}
     </div>`;
+  }
+  const sales = state.txStatus === "ready" ? saleAnalysis(state.tx) : [];
+  if (sales.length) {
+    if (!worldHist.rows && sales.some((x) => !x.worldUsd)) loadWorldHistory();
+    html += salesCard(sales);
+    html += reinvestCard(sales, s);
   }
 
   html += `<div class="status">${marketStatusLine()}</div>`;
@@ -767,11 +874,11 @@ function renderPortfolio() {
   }
 
   if (state.txStatus === "ready") {
-    html += `<div class="btn-row"><button class="btn ghost" data-action="import">${I.upload}Nhập tệp sao lưu</button>${state.downloads && state.tx.length ? `<button class="btn ghost" data-action="export">${I.download}Sao lưu JSON</button>` : ""}</div>`;
+    html += `<div class="btn-row"><button class="btn ghost" data-action="import">${I.upload}Nhập tệp sao lưu</button>${state.downloads && state.tx.length ? `<button class="btn ghost" data-action="export">${I.download}Sao lưu JSON</button><button class="btn ghost" data-action="export-csv">${I.download}Xuất Excel (CSV)</button>` : ""}</div>`;
   }
   html += `<p class="foot">Giá trị hiện tại dùng giá thu mua Phú Quý (mua vào), không dùng giá bán ra. Giá vốn mua có phí; phí bán được trừ khỏi tiền thu. Giá vốn tính theo bình quân gia quyền theo từng thương hiệu.</p>${state.cloud === "signedin"
     ? `<p class="foot"><b>Đang đồng bộ theo tài khoản ${esc(state.user?.email || "Google")}.</b> Giao dịch và cảnh báo tự tải lại trên mọi máy đăng nhập cùng tài khoản; chỉ bạn đọc được dữ liệu này.</p>`
-    : `<p class="foot"><b>Giao dịch và cảnh báo đang lưu trong trình duyệt này</b>, chưa đồng bộ sang máy khác.${state.cloud === "signedout" ? " Đăng nhập Google để tự đồng bộ." : " Hãy bấm “Sao lưu JSON” định kỳ; khi đổi máy, dùng “Nhập từ app cũ” để nạp lại tệp sao lưu."}</p>`}</div>`;
+    : `<p class="foot"><b>Giao dịch và cảnh báo đang lưu trong trình duyệt này</b>, chưa đồng bộ sang máy khác.${state.cloud === "signedout" ? " Đăng nhập Google để tự đồng bộ." : " Hãy bấm “Sao lưu JSON” định kỳ; khi đổi máy, dùng “Nhập tệp sao lưu” để nạp lại."}</p>`}</div>`;
   el.innerHTML = html;
 }
 
@@ -791,13 +898,19 @@ function txCard(e) {
     const d = val - cost, pct = cost > 0 ? (d / cost) * 100 : 0, up = d >= 0;
     cls = up ? "gain" : "loss";
     pl = `<div class="pl-row"><span class="muted">Nếu bán hôm nay: <span class="num">${money(val)}</span></span><span style="display:flex;gap:6px;align-items:center"><span class="pl-val ${up ? "up" : "down"}">${signedMoney(d)}</span><span class="pl-chip ${up ? "up" : "down"}">${up ? "▲ +" : "▼ −"}${Math.abs(pct).toFixed(2).replace(".", ",")}%</span></span></div>`;
+  } else if (sell) {
+    const x = saleAnalysis(state.tx).find((y) => y.id === e._id);
+    if (x) {
+      const up = x.pl >= 0; cls = up ? "gain" : "loss";
+      pl = `<div class="pl-row"><span class="muted">Giữ ${holdText(x.days)} · vốn ${money(x.costPerLuong)}/lượng</span><span style="display:flex;gap:6px;align-items:center"><span class="pl-val ${up ? "up" : "down"}">${signedMoney(x.pl)}</span><span class="pl-chip ${up ? "up" : "down"}">${up ? "▲ " : "▼ "}${pctText(x.pct)}</span></span></div>`;
+    }
   } else if (!sell && bb == null) {
     pl = `<div class="pl-row"><span class="muted">Lời/lỗ</span><span class="warn tiny" style="font-weight:600">${PRICE_ERROR_LABEL}</span></div>`;
   } else if (!sell) {
     pl = `<div class="pl-row"><span class="muted">Lời/lỗ</span><span class="muted tiny">Chưa có giá thu mua cho thương hiệu này</span></div>`;
   }
   return `<button class="tx ${cls}" data-edit="${esc(e._id)}" aria-label="Sửa giao dịch ${sell ? "bán" : "mua"} ngày ${esc(e.date)}">
-    <div class="tx-head"><span class="badge ${sell ? "sell" : "buy"}">${sell ? "BÁN" : "MUA"}</span><span class="tx-date num">${esc(e.date)}</span></div>
+    <div class="tx-head"><span class="badge ${sell ? "sell" : "buy"}">${sell ? "BÁN" : "MUA"}</span><span class="tx-date num">${esc(e.date)}${e.time ? " " + esc(e.time) : ""}</span></div>
     <div class="tx-name">${esc(e.productName || "Bạc")}${brand ? ` · ${esc(brand)}` : ` · <span class="muted">${LEGACY_BRAND}</span>`}</div>
     <div class="tx-meta"><span>${fmtNum(i.grams)} g · ${fmtNum(i.grams / GRAMS.luong)} lượng</span><span class="amt">${money(i.amount)}</span></div>
     <div class="tx-sub">${detail}${i.fee > 0 ? ` · Phí ${money(i.fee)}` : ""}</div>
@@ -806,9 +919,140 @@ function txCard(e) {
   </button>`;
 }
 
+/* ---------- thẻ "Kết quả các lần bán" và "Gợi ý tái đầu tư" ---------- */
+function salesCard(sales) {
+  const s = saleSummary(sales);
+  const up = s.pl >= 0;
+  let h = `<div class="card"><div class="row"><div class="eyebrow">Kết quả các lần bán</div><span class="tiny muted">${s.count} lần bán</span></div>
+    <div class="pl-big ${up ? "up" : "down"}" style="margin-top:8px"><span class="amt">${up ? "▲" : "▼"} ${signedMoney(s.pl)}</span><span class="pl-chip ${up ? "up" : "down"}">${pctText(s.pct)}</span><span class="tiny muted">tổng lời/lỗ đã chốt</span></div>
+    <div class="metrics" style="margin-top:10px">
+      <div class="row"><span class="k">Tổng đã bán</span><span class="v">${fmtNum(s.luong)} lượng</span></div>
+      <div class="row"><span class="k">Tổng tiền thu về (đã trừ phí)</span><span class="v">${money(s.net)}</span></div>
+      <div class="row"><span class="k">Giá vốn của phần đã bán</span><span class="v">${money(s.costSold)}</span></div>
+      ${s.fee > 0 ? `<div class="row"><span class="k">Tổng phí bán</span><span class="v">${money(s.fee)}</span></div>` : ""}
+      <div class="row"><span class="k">Thời gian nắm giữ trung bình</span><span class="v">${holdText(s.days)}</span></div>
+      ${s.annual != null ? `<div class="row"><span class="k">Lợi nhuận quy ra năm</span><span class="v ${s.annual >= 0 ? "up" : "down"}">${pctText(s.annual, 1)}/năm</span></div>` : ""}
+      ${s.count > 1 && s.best ? `<div class="row"><span class="k">Lần bán tốt nhất</span><span class="v up">${esc(s.best.date)} · ${pctText(s.best.pct)}</span></div>` : ""}
+      ${s.count > 1 && s.worst && s.worst !== s.best ? `<div class="row"><span class="k">Lần bán kém nhất</span><span class="v ${s.worst.pct >= 0 ? "up" : "down"}">${esc(s.worst.date)} · ${pctText(s.worst.pct)}</span></div>` : ""}
+    </div>`;
+  const months = [...s.byMonth.entries()].sort((a, b) => a[0].localeCompare(b[0])).slice(-12);
+  if (months.length) {
+    const max = Math.max(...months.map(([, r]) => Math.abs(r.pl)), 1);
+    h += `<div class="eyebrow" style="margin-top:14px">Lời/lỗ theo tháng</div><div class="mbars" role="img" aria-label="Lời lỗ đã chốt theo tháng">${months.map(([k, r]) => {
+      const pct = Math.max(4, (Math.abs(r.pl) / max) * 100);
+      return `<div class="mb" title="${esc(k.slice(5) + "/" + k.slice(0, 4))}: ${esc(signedMoney(r.pl))}"><div class="mb-col"><i class="${r.pl >= 0 ? "pos" : "neg"}" style="height:${pct.toFixed(0)}%"></i></div><span>${k.slice(5)}/${k.slice(2, 4)}</span></div>`;
+    }).join("")}</div>`;
+    const years = [...s.byYear.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+    h += `<div class="metrics" style="margin-top:10px">${years.map(([y, r]) => `<div class="row"><span class="k">Năm ${y} · ${r.count} lần, ${fmtNum(r.luong)} lượng</span><span class="v ${r.pl >= 0 ? "up" : "down"}">${signedMoney(r.pl)}</span></div>`).join("")}</div>`;
+  }
+  h += `<div class="eyebrow" style="margin-top:14px">Chi tiết từng lần bán</div><div class="sale-list">${[...sales].reverse().map((x) => {
+    const w = worldAtSale(x), u = x.pl >= 0;
+    return `<details class="sale"><summary><span class="badge sell">BÁN</span><span class="num">${esc(x.date)}${x.time ? " " + esc(x.time) : ""}</span><span class="grow tiny muted">${fmtNum(x.luong)} lượng</span><span class="pl-val ${u ? "up" : "down"}">${signedMoney(x.pl)}</span><span class="pl-chip ${u ? "up" : "down"}">${pctText(x.pct)}</span></summary>
+      <div class="metrics" style="margin-top:8px">
+        <div class="row"><span class="k">Giá bán</span><span class="v">${money(x.sellPerLuong)}/lượng</span></div>
+        <div class="row"><span class="k">Giá vốn bình quân lúc bán</span><span class="v">${money(x.costPerLuong)}/lượng</span></div>
+        <div class="row"><span class="k">Tiền bán${x.fee > 0 ? " (trước phí)" : ""}</span><span class="v">${money(x.gross)}</span></div>
+        ${x.fee > 0 ? `<div class="row"><span class="k">Phí</span><span class="v">−${money(x.fee)}</span></div><div class="row"><span class="k">Thực nhận</span><span class="v">${money(x.net)}</span></div>` : ""}
+        <div class="row"><span class="k">Giá vốn phần đã bán</span><span class="v">${money(x.costSold)}</span></div>
+        <div class="row"><span class="k">Lời/lỗ</span><span class="v ${u ? "up" : "down"}">${signedMoney(x.pl)} (${pctText(x.pct)})</span></div>
+        <div class="row"><span class="k">Thời gian nắm giữ</span><span class="v">${holdText(x.days)}${x.firstBuy ? ` · mua từ ${esc(new Date(x.firstBuy).toISOString().slice(0, 10).split("-").reverse().join("/"))}` : ""}</span></div>
+        ${x.annual != null ? `<div class="row"><span class="k">Quy ra năm</span><span class="v ${x.annual >= 0 ? "up" : "down"}">${pctText(x.annual, 1)}/năm</span></div>` : ""}
+        <div class="row"><span class="k">Giá bạc thế giới lúc bán</span><span class="v">${w ? fmtUsd(w) : worldHist.loading ? "đang tải…" : "chưa có dữ liệu"}</span></div>
+        ${x.note ? `<div class="tx-note">Lý do bán: ${esc(x.note)}</div>` : ""}
+        <div class="btn-row" style="margin-top:2px"><button class="btn" data-edit="${esc(x.id)}">${I.edit}Sửa giao dịch</button></div>
+      </div></details>`;
+  }).join("")}</div></div>`;
+  return h;
+}
+
+function reinvestCard(sales, pf) {
+  const s = saleSummary(sales), t = target(), sell = buyback() != null ? Number(t?.sell) : 0;
+  let h = `<div class="card"><div class="eyebrow">Gợi ý tái đầu tư phần lời</div>`;
+  if (s.pl <= 0) return h + `<p class="small muted" style="margin:8px 0 0">Chưa có lời đã chốt để tái đầu tư${s.pl < 0 ? ` (đang lỗ ${money(-s.pl)} sau các lần bán)` : ""}.</p></div>`;
+  if (!(sell > 0)) return h + `<p class="small muted" style="margin:8px 0 0">Lời đã chốt ${money(s.pl)}. Cần giá bán ra Phú Quý để tính số lượng mua lại.</p></div>`;
+  const profit = s.pl;
+  const opt = (title, price, desc, action) => {
+    const n = Math.floor(profit / price), rest = profit - n * price;
+    const newAvg = n > 0 && pf.luong > 0 ? (pf.cost + n * price) / (pf.luong + n) : null;
+    return `<div class="ri"><div class="row"><b class="small">${title}</b><span class="num small">${money(price)}/lượng</span></div>
+      <div class="tiny muted" style="margin-top:3px">${desc}</div>
+      <div class="tiny" style="margin-top:4px">${n > 0 ? `Mua được <b>${n} lượng</b>, dư ${money(rest)}.` : `Chưa đủ 1 lượng (thiếu ${money(price - profit)}).`}${newAvg ? ` Giá vốn bình quân mới ≈ <b class="num">${money(newAvg)}</b>/lượng (hiện ${money(pf.avgPerLuong)}).` : ""}</div>
+      ${action || ""}</div>`;
+  };
+  h += `<p class="small" style="margin:8px 0 0">Lời đã chốt: <b class="num up">${money(profit)}</b>. Phú Quý đang bán ra ${money(sell)}/lượng.</p><div class="ri-list">`;
+  h += opt("1. Mua lại ngay", sell, "Đơn giản nhất, nhưng mua ở giá hiện tại.");
+  for (const k of [3, 5]) {
+    const p = Math.round((sell * (1 - k / 100)) / 1000) * 1000;
+    h += opt(`${k === 3 ? "2" : "3"}. Chờ giá giảm ${k}% rồi mua`, p, `Đặt cảnh báo, khi giá bán ra xuống ${money(p)} điện thoại sẽ báo.`,
+      `<button class="linkbtn small" style="margin-top:6px" data-buyback-alert="${p}">Tạo cảnh báo “Giá bán ra ≤ ${fmtInt(p)} ₫”</button>`);
+  }
+  const part = Math.round(profit / 3);
+  h += `<div class="ri"><b class="small">4. Chia 3 đợt</b><div class="tiny muted" style="margin-top:3px">Mỗi đợt khoảng ${money(part)}, mua cách nhau vài tuần để giá vốn trung bình hơn, tránh mua hết ở đỉnh.</div></div>`;
+  h += `<div class="ri"><b class="small">5. Giữ tiền mặt</b><div class="tiny muted" style="margin-top:3px">Giữ ${money(profit)} chờ cơ hội rõ hơn; không mất phí chênh lệch mua–bán (hiện ${money(sell - Number(t.buy))}/lượng).</div></div>`;
+  return h + `</div><p class="tiny muted" style="margin:10px 0 0">Chỉ là tính toán tham khảo theo giá hiện tại, không phải lời khuyên đầu tư.</p></div>`;
+}
+
+/* ---------- tính thử trước khi bán ---------- */
+function sellSimForm() {
+  const pf = calculatePortfolio(state.tx, buyback());
+  const t = target();
+  openSheet(`<h3 id="sheet-title">Tính thử nếu bán</h3>
+    <p class="tiny muted" style="margin:4px 0 0">Không ghi gì vào danh mục. Đang giữ ${fmtNum(pf.luong)} lượng, giá vốn bình quân ${money(pf.avgPerLuong)}/lượng.</p>
+    <form id="sim-form" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="sim-q">Số lượng bán (lượng)</label><input id="sim-q" inputmode="decimal" value="${esc(fmtNum(pf.luong))}"></div>
+        <div class="field"><label for="sim-p">Giá thu mua (₫/lượng)</label><input id="sim-p" inputmode="numeric" value="${buyback() != null ? esc(fmtInt(t.buy)) : ""}"></div>
+      </div>
+      <div class="field"><label for="sim-fee">Phí (₫)</label><input id="sim-fee" inputmode="numeric" value="0"></div>
+      <div class="metrics" id="sim-out" style="margin-top:6px"></div>
+      <div class="actions"><button type="button" class="btn" data-action="close">Đóng</button><button type="submit" class="btn primary" id="sim-rec">Ghi giao dịch bán này</button></div>
+    </form>`, "#sim-q");
+  const calc = () => {
+    const q = parseDec($("#sim-q").value), p = parseMoney($("#sim-p").value), fee = parseMoney($("#sim-fee").value) || 0;
+    const ok = q > 0 && p > 0 && q <= pf.luong + 0.0001;
+    $("#sim-rec").disabled = !ok;
+    if (!ok) { $("#sim-out").innerHTML = `<p class="small warn" style="margin:0">${q > pf.luong + 0.0001 ? `Bạn chỉ đang giữ ${fmtNum(pf.luong)} lượng.` : "Nhập số lượng và giá."}</p>`; return null; }
+    const gross = Math.round(q * p), net = gross - fee, cost = Math.round(pf.avgPerLuong * q), pl = net - cost, pct = cost > 0 ? (pl / cost) * 100 : null, u = pl >= 0;
+    const be = q > 0 ? Math.ceil((cost + fee) / q) : 0;
+    $("#sim-out").innerHTML = `
+      <div class="row"><span class="k">Tiền thu về (đã trừ phí)</span><span class="v">${money(net)}</span></div>
+      <div class="row"><span class="k">Giá vốn phần bán</span><span class="v">${money(cost)}</span></div>
+      <div class="row"><span class="k">Lời/lỗ</span><span class="v ${u ? "up" : "down"}">${signedMoney(pl)} (${pctText(pct)})</span></div>
+      <div class="row"><span class="k">Giá thu mua cần để hòa vốn</span><span class="v">${money(be)}/lượng</span></div>
+      <div class="row"><span class="k">Còn lại sau khi bán</span><span class="v">${fmtNum(Math.max(0, pf.luong - q))} lượng · giá vốn ${money(Math.max(0, pf.cost - cost))}</span></div>`;
+    return { q, p, fee };
+  };
+  $("#sim-form").addEventListener("input", calc);
+  calc();
+  $("#sim-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const r = calc(); if (!r) return;
+    closeSheet();
+    txForm(null, { kind: "sell", qty: r.q, price: r.p, fee: r.fee });
+  });
+}
+
+/* ---------- xuất CSV (mở được bằng Excel) ---------- */
+async function exportCsv() {
+  if (!state.downloads) return;
+  const sales = new Map(saleAnalysis(state.tx).map((x) => [x.id, x]));
+  const n = (v, d = 0) => (v == null || !Number.isFinite(Number(v)) ? "" : (d ? Number(v).toFixed(d) : String(Math.round(v))).replace(".", ","));
+  const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const head = ["Ngày", "Giờ", "Loại", "Thương hiệu", "Sản phẩm", "Số lượng", "Quy cách", "Đơn vị", "Đơn giá (₫)", "Phí (₫)", "Thành tiền (₫)", "Quy ra lượng", "Giá vốn phần bán (₫)", "Lời/lỗ (₫)", "Lời/lỗ (%)", "Nắm giữ (ngày)", "Giá thế giới lúc bán (USD/oz)", "Ghi chú"];
+  const rows = [...state.tx].sort(orderKey).map((e) => {
+    const i = txInfo(e), x = sales.get(e._id);
+    return [e.date, e.time || "", i.kind === "sell" ? "Bán" : "Mua", e.brand || LEGACY_BRAND, e.productName || "", n(i.quantity, 4), n(i.weight, 4), UNIT_NAMES[i.unit], n(i.price), n(i.fee),
+      n(i.kind === "sell" ? i.amount - i.fee : i.amount + i.fee), n(i.grams / GRAMS.luong, 4),
+      x ? n(x.costSold) : "", x ? n(x.pl) : "", x ? n(x.pct, 2) : "", x ? n(x.days) : "", x && worldAtSale(x) ? n(worldAtSale(x), 2) : "", e.note || ""].map(q).join(";");
+  });
+  const data = "﻿" + [head.map(q).join(";"), ...rows].join("\r\n");
+  try { await state.downloads.save({ filename: `silver-tracker-${todayIso()}.csv`, data, type: "text/csv;charset=utf-8" }); }
+  catch (e) { if (e?.code !== "declined") toast("Chưa tải được tệp."); }
+}
+
 function alertText(a) {
   const k = ALERT_KINDS[a.kind];
-  return `${k ? k.label : a.kind} ${isWorldKind(a.kind) ? fmtUsd(a.threshold) : fmtInt(a.threshold) + " ₫"}${a.call ? " · báo động" : ""}`;
+  return `${k ? k.label : a.kind} ${isWorldKind(a.kind) ? fmtUsd(a.threshold) : fmtInt(a.threshold) + " ₫"}${a.profitPct ? ` · chốt lời ${pctText(a.profitPct, 1)}` : ""}${a.call ? " · báo động" : ""}`;
 }
 
 /* ---------- nhận cảnh báo qua Telegram / cuộc gọi ----------
@@ -925,6 +1169,7 @@ function renderAlerts() {
   if (state.profileLoaded && pf.avgPerLuong > 0 && !alerts.some((a) => a.kind === "buy_above" && Math.round(a.threshold) === Math.round(pf.avgPerLuong))) {
     html += `<button class="linkbtn small" style="margin-top:10px" data-action="alert-breakeven">Thêm cảnh báo khi giá thu mua đạt giá hòa vốn ${money(pf.avgPerLuong)}</button>`;
   }
+  if (state.profileLoaded && pf.avgPerLuong > 0) html += `<button class="linkbtn small" style="margin-top:6px;display:block" data-action="alert-profit">Thêm cảnh báo chốt lời theo % so với giá vốn</button>`;
   html += `</div>`;
 
   html += notifyCard();
@@ -950,7 +1195,7 @@ function toast(msg) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
 }
 
-function txForm(entry) {
+function txForm(entry, preset) {
   const isEdit = !!entry;
   const i = entry ? txInfo(entry) : null;
   const t = target();
@@ -958,7 +1203,9 @@ function txForm(entry) {
     date: vnDateToIso(entry.date) || todayIso(), kind: i.kind,
     brand: i.missingBrand ? LEGACY_BRAND : entry.brand, product: entry.productName || "Bạc",
     unit: i.unit, weight: i.weight, qty: i.quantity, price: i.price, fee: i.fee, note: entry.note || "",
-  } : { date: todayIso(), kind: "buy", brand: "Phú Quý", product: "Bạc miếng 1 lượng", unit: "luong", weight: 1, qty: "", price: "", fee: 0, note: "" };
+    time: entry.time || "",
+  } : { date: todayIso(), kind: "buy", brand: "Phú Quý", product: "Bạc miếng 1 lượng", unit: "luong", weight: 1, qty: "", price: "", fee: 0, note: "", time: "", ...(preset || {}) };
+  if (!entry && v.kind === "sell" && !v.time) v.time = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit" }).format(new Date());
   openSheet(`<h3 id="sheet-title">${isEdit ? "Sửa giao dịch" : "Thêm giao dịch"}</h3>
     <p class="tiny muted" style="margin:4px 0 0">Khối lượng và giá trị được quy đổi về gram để tính danh mục.</p>
     ${isEdit && i.missingBrand ? `<div class="notice warn" style="margin-top:12px">${I.info}<div class="grow">Giao dịch cũ chưa lưu thương hiệu và quy cách sản phẩm. Hãy xác nhận thương hiệu trước khi lưu để giá trị danh mục chính xác hơn.</div></div>` : ""}
@@ -967,7 +1214,7 @@ function txForm(entry) {
         <button type="button" class="b" data-kind="buy" aria-pressed="${v.kind === "buy"}">Mua</button>
         <button type="button" class="s" data-kind="sell" aria-pressed="${v.kind === "sell"}">Bán</button></div></div>
       <div class="grid2">
-        <div class="field"><label for="f-date">Ngày giao dịch</label><input id="f-date" type="date" value="${esc(v.date)}" max="${todayIso()}" required></div>
+        <div class="field"><label for="f-date">Ngày giao dịch</label><div style="display:flex;gap:6px"><input id="f-date" type="date" value="${esc(v.date)}" max="${todayIso()}" required style="flex:1;min-width:0"><input id="f-time" type="time" value="${esc(v.time)}" aria-label="Giờ (không bắt buộc)" style="width:96px"></div></div>
         <div class="field"><label for="f-brand">Thương hiệu</label><input id="f-brand" list="brands" value="${esc(v.brand)}" autocomplete="off" required></div>
       </div>
       <datalist id="brands"><option value="Phú Quý"><option value="Ancarat"><option value="DOJI"></datalist>
@@ -981,7 +1228,7 @@ function txForm(entry) {
         <span class="hint" id="f-price-hint"></span></div>
       <div class="grid2">
         <div class="field"><label for="f-fee">Phí (₫)</label><input id="f-fee" inputmode="numeric" value="${esc(fmtInt(v.fee || 0))}"></div>
-        <div class="field"><label for="f-note">Ghi chú</label><input id="f-note" value="${esc(v.note)}" maxlength="200"></div>
+        <div class="field"><label for="f-note" id="f-note-lab">Ghi chú</label><input id="f-note" value="${esc(v.note)}" maxlength="200"></div>
       </div>
       <div class="total"><span class="small muted" id="f-total-lab">Tổng tiền</span><span class="v" id="f-total">—</span></div>
       <div class="field"><span class="err" id="f-err" role="alert"></span></div>
@@ -997,6 +1244,7 @@ function txForm(entry) {
   const update = () => {
     const kind = form.dataset.kind;
     const unit = $("#f-unit").value;
+    $("#f-note-lab").textContent = kind === "sell" ? "Lý do bán / ghi chú" : "Ghi chú";
     $("#f-price-lab").textContent = `Đơn giá (₫/${UNIT_NAMES[unit]})`;
     const tt = target();
     $("#f-price-hint").textContent = tt && buyback() != null && unit === "luong" && canonicalBrand($("#f-brand").value) === "phu-quy"
@@ -1048,6 +1296,7 @@ function buildTx(form) {
       productName: $("#f-product").value.trim() || "Bạc",
       unit, unitWeight: round4(w), quantity: round4(q), pricePerUnit: p, feeVnd: fee,
       note: $("#f-note").value.trim(),
+      time: /^\d{2}:\d{2}$/.test($("#f-time").value) ? $("#f-time").value : "",
       soLuong: round4(grams / GRAMS.luong), giaMua,
     },
   };
@@ -1059,6 +1308,11 @@ async function saveTxFromForm(form, entry) {
   const now = new Date().toISOString();
   const body = { ...r.data, createdAt: entry?.createdAt || now, updatedAt: now };
   if (entry?.legacyId != null) body.legacyId = entry.legacyId;
+  if (body.transactionType === "sell") {
+    // Lưu giá thế giới lúc bán (khi ghi ngay trong ngày) để xem lại sau này.
+    const w = Number(entry?.worldUsd) > 0 ? Number(entry.worldUsd) : (vnDateToIso(body.date) === todayIso() ? worldUsd() : null);
+    if (w > 0) body.worldUsd = Math.round(w * 100) / 100;
+  }
   if (body.transactionType === "sell" || entry) {
     if (saleWouldOverdraw(state.tx, body, entry?._id)) { $("#f-err").textContent = "Số bạc bán vượt quá khối lượng đang sở hữu tại ngày giao dịch."; return; }
   }
@@ -1214,9 +1468,11 @@ async function exportJson() {
 /* ---------- alerts ---------- */
 function alertForm(preset) {
   const t = target(), w = worldUsd();
+  const avg = calculatePortfolio(state.tx, buyback()).avgPerLuong;
+  const profitTh = (pct) => Math.ceil((avg * (1 + pct / 100)) / 1000) * 1000;
   openSheet(`<h3 id="sheet-title">Thêm cảnh báo</h3>
     <form id="a-form" novalidate>
-      <div class="field"><label for="a-kind">Điều kiện</label><select id="a-kind">${Object.entries(ALERT_KINDS).map(([k, v]) => `<option value="${k}" ${preset?.kind === k ? "selected" : ""}>${v.label}</option>`).join("")}</select></div>
+      <div class="field"><label for="a-kind">Điều kiện</label><select id="a-kind">${Object.entries(ALERT_KINDS).map(([k, v]) => `<option value="${k}" ${preset?.kind === k ? "selected" : ""}>${v.label}</option>`).join("")}${avg > 0 ? `<option value="profit_pct" ${preset?.kind === "profit_pct" ? "selected" : ""}>Chốt lời: lời ≥ …% so với giá vốn</option>` : ""}</select></div>
       <div class="field"><label for="a-th" id="a-th-lab">Mức giá</label><input id="a-th" inputmode="decimal" value="${preset?.threshold ? esc(fmtInt(preset.threshold)) : ""}" required>
         <span class="hint" id="a-hint"></span></div>
       <label class="field" style="display:flex;gap:9px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="a-call" style="width:auto;margin-top:3px"><span><b>Báo động reo khi chạm mức này</b><br><span class="hint">Điện thoại reo liên tục qua ứng dụng ntfy cho tới khi bạn tắt. Dùng cho mức quan trọng. Tin nhắn Telegram vẫn gửi cho mọi cảnh báo.</span></span></label>
@@ -1224,19 +1480,33 @@ function alertForm(preset) {
       <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="a-save">Thêm cảnh báo</button></div>
     </form>`, "#a-th");
   const sync = () => {
-    const world = isWorldKind($("#a-kind").value);
+    const kind = $("#a-kind").value, world = isWorldKind(kind);
+    if (kind === "profit_pct") {
+      const pc = parseDec($("#a-th").value);
+      $("#a-th-lab").textContent = "Mức lời (%)";
+      $("#a-hint").textContent = pc > 0 ? `Báo khi giá thu mua ≥ ${money(profitTh(pc))}/lượng (giá vốn ${money(avg)}, lời ${pctText(pc, 1)}).` : `Giá vốn bình quân hiện tại ${money(avg)}/lượng. Ví dụ nhập 10.`;
+      return;
+    }
     $("#a-th-lab").textContent = world ? "Mức giá (USD/oz)" : "Mức giá (₫/lượng)";
     $("#a-hint").textContent = world ? (w ? `Hiện tại: ${fmtUsd(w)}` : "") : (buyback() != null ? `Hiện tại: thu mua ${money(t.buy)}, bán ra ${money(t.sell)}` : "");
   };
   $("#a-kind").addEventListener("change", () => { $("#a-th").value = ""; sync(); });
+  $("#a-th").addEventListener("input", () => { if ($("#a-kind").value === "profit_pct") sync(); });
   sync();
   $("#a-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const world = isWorldKind($("#a-kind").value);
-    const th = world ? parseDec($("#a-th").value) : parseMoney($("#a-th").value);
+    let kind = $("#a-kind").value, profitPct = null;
+    if (kind === "profit_pct") {
+      profitPct = parseDec($("#a-th").value);
+      if (!(profitPct > 0 && profitPct < 1000)) { $("#a-err").textContent = "Nhập mức lời theo %, ví dụ 10."; return; }
+      kind = "buy_above";
+    }
+    const world = isWorldKind(kind);
+    const th = profitPct != null ? profitTh(profitPct) : world ? parseDec($("#a-th").value) : parseMoney($("#a-th").value);
     if (!(th > 0)) { $("#a-err").textContent = "Nhập mức giá."; return; }
     if (world && th > 1000) { $("#a-err").textContent = "Giá thế giới tính theo USD/oz, ví dụ 58.5."; return; }
-    const a = { id: `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind: $("#a-kind").value, threshold: world ? Math.round(th * 100) / 100 : th, enabled: true, triggered: false, call: $("#a-call").checked, createdAt: new Date().toISOString() };
+    const a = { id: `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind, threshold: world ? Math.round(th * 100) / 100 : th, enabled: true, triggered: false, call: $("#a-call").checked, createdAt: new Date().toISOString() };
+    if (profitPct != null) { a.profitPct = Math.round(profitPct * 100) / 100; a.costAtCreate = Math.round(avg); }
     const next = cloneProfile();
     next.alerts.push(a);
     evaluateAlertsInto(next, true);
@@ -1482,8 +1752,8 @@ function subscribeProfile() {
 }
 
 const localDownloads = {
-  async save({ filename, data }) {
-    const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+  async save({ filename, data, type }) {
+    const url = URL.createObjectURL(new Blob([data], { type: type || "application/json" }));
     const a = document.createElement("a"); a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
@@ -1649,6 +1919,8 @@ document.addEventListener("click", (e) => {
   if (go) { state.tab = go.dataset.goto; render(); window.scrollTo(0, 0); return; }
   const f = e.target.closest("[data-filter]");
   if (f) { state.filter = f.dataset.filter; render(); return; }
+  const bba = e.target.closest("[data-buyback-alert]");
+  if (bba) { alertForm({ kind: "sell_below", threshold: Number(bba.dataset.buybackAlert) }); return; }
   const ed = e.target.closest("[data-edit]");
   if (ed) { const entry = state.tx.find((x) => x._id === ed.dataset.edit); if (entry) txForm(entry); return; }
   const delA = e.target.closest("[data-del-alert]");
@@ -1663,11 +1935,14 @@ document.addEventListener("click", (e) => {
   else if (a === "add") txForm(null);
   else if (a === "import") importForm();
   else if (a === "export") exportJson();
+  else if (a === "export-csv") exportCsv();
+  else if (a === "sell-sim") sellSimForm();
   else if (a === "retry-tx") subscribeTx();
   else if (a === "signin") signIn();
   else if (a === "account") { if (state.cloud === "signedin") accountSheet(); else signIn(); }
   else if (a === "signout") { closeSheet(); firebase.auth().signOut().catch(() => {}); }
   else if (a === "add-alert") alertForm(null);
+  else if (a === "alert-profit") alertForm({ kind: "profit_pct" });
   else if (a === "notify-settings") notifySettingsForm();
   else if (a === "alert-breakeven") alertForm({ kind: "buy_above", threshold: Math.round(calculatePortfolio(state.tx, buyback()).avgPerLuong) });
   else if (a === "ask-delete") { const id = $("#tx-form")?.dataset.id; const entry = state.tx.find((x) => x._id === id); if (entry) askDelete(entry); }
