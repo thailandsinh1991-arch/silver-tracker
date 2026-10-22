@@ -216,15 +216,24 @@ def main():
                 st_alerts[aid] = "off"
                 continue
             hit = val >= th if direction > 0 else val <= th
-            if hit and st_alerts.get(aid) != "on":
-                fired += 1
+            # "on:<loại>:<mức>" = đã báo THÀNH CÔNG cho đúng mức này. Sửa mức → báo lại.
+            # Chưa gửi được qua kênh nào (chưa cài, lỗi) → giữ "off" để lần sau thử lại.
+            key = f"on:{a.get('kind')}:{th}"
+            if hit and st_alerts.get(aid) != key:
                 f = usd if field == "world" else vnd
                 word = "đã chạm hoặc vượt" if direction > 0 else "đã chạm hoặc xuống dưới"
+                before = sent["msg"] + sent["alarm"]
                 send_msg(f"🔔 <b>Cảnh báo giá bạc</b>\n{label}: <b>{f(val)}</b>\n{word} mức bạn đặt {f(th)}.\n"
                          f"Cập nhật {fmt_time(asof[field])}. <a href=\"{APP_URL}\">Mở app</a>")
                 if a.get("call"):
                     place_call(f"Cảnh báo giá bạc: {label}", f"{f(val)} {word} mức {f(th)}. Cập nhật {fmt_time(asof[field])}.")
-            st_alerts[aid] = "on" if hit else "off"
+                if sent["msg"] + sent["alarm"] > before:
+                    fired += 1
+                    st_alerts[aid] = key
+                else:
+                    st_alerts[aid] = "pending"
+                continue
+            st_alerts[aid] = key if hit else "off"
 
         new_state["alerts"] = st_alerts
         new_state["lastError"] = " · ".join(dict.fromkeys(errors)) if errors else ""
@@ -238,7 +247,7 @@ def main():
             "markedAlarm": sum(1 for a in al if a.get("call")), "fired": fired,
             "telegram": {"on": bool(settings.get("telegramOn")), "hasUsername": bool(username), "linked": bool(chat_id), "sent": sent["msg"]},
             "alarm": {"on": bool(settings.get("alarmOn")), "topicOk": want_call, "sent": sent["alarm"]},
-            "alertsState": {"on": sum(1 for v in st_alerts.values() if v == "on"), "off": sum(1 for v in st_alerts.values() if v == "off")},
+            "alertsState": {k: sum(1 for a in al if (st_alerts.get(a.get("id")) or "off").split(":")[0] == k) for k in ("on", "pending", "off")},
             "errors": [re.sub(r"@\w+", "@***", e)[:200] for e in dict.fromkeys(errors)],
         })
         log(f"[{uid[:6]}] cảnh báo kích hoạt: {fired}{' · lỗi: ' + errors[-1] if errors else ''}")
