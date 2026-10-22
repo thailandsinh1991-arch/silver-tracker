@@ -2,8 +2,9 @@ name: Cập nhật giá bạc
 
 on:
   schedule:
-    # Mỗi 15 phút, từ 07:00 đến 22:45 giờ Việt Nam (00:00–15:45 UTC). GitHub có thể chạy trễ vài phút.
-    - cron: "*/15 0-15 * * *"
+    # Lịch GitHub hay chạy trễ, nên mỗi lần chạy ở lại ~50 phút và kiểm tra giá mỗi 2 phút.
+    # Lượt mới xếp hàng chờ lượt đang chạy (concurrency) → gần như liên tục từ 07:00 đến 22:50 giờ VN.
+    - cron: "*/10 0-15 * * *"
   workflow_dispatch:
     inputs:
       test_notify:
@@ -15,13 +16,20 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-prices
+  # Chạy tay (gửi thử) không phải chờ lượt tự động đang chạy.
+  group: update-prices-${{ github.event_name }}
   cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 60
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      LOOP_MINUTES: ${{ inputs.test_notify && '0' || '50' }}
+      EVERY_SECONDS: "120"
+      COMMIT_EVERY_SECONDS: "720"
     steps:
       - uses: actions/checkout@v4
 
@@ -29,33 +37,48 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Lấy giá mới
-        run: python scripts/update_prices.py
-
-      - name: Kiểm tra cảnh báo, gửi Telegram / báo động ntfy
-        if: always()
+      - name: Gửi thử thông báo
+        if: inputs.test_notify
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          NOTIFY_TEST: ${{ inputs.test_notify && '1' || '' }}
+          NOTIFY_TEST: "1"
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ] || [ -z "$TELEGRAM_BOT_TOKEN" ]; then
-            echo "Chưa cài khoá Telegram/Firebase trong GitHub Secrets → bỏ qua cảnh báo."; exit 0
-          fi
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ] || [ -z "$TELEGRAM_BOT_TOKEN" ]; then echo "Chưa cài khoá trong GitHub Secrets."; exit 0; fi
           pip install --quiet --disable-pip-version-check firebase-admin==6.5.0
+          python scripts/update_prices.py || true
           python scripts/check_alerts.py
 
-      - name: Lưu vào repo nếu giá thay đổi
-        if: always()
+      - name: Lấy giá, kiểm tra cảnh báo (lặp mỗi 2 phút), lưu vào repo
+        if: ${{ !inputs.test_notify }}
         run: |
-          if [ -z "$(git status --porcelain -- data/market.json data/notify.json data/notify-log.json archive)" ]; then
-            echo "Không có thay đổi."; exit 0
-          fi
           git config user.name "silver-tracker-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market.json archive
-          [ -f data/notify.json ] && git add data/notify.json
-          [ -f data/notify-log.json ] && git add data/notify-log.json
-          git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
-          git commit -m "Cập nhật giá bạc $(TZ=Asia/Ho_Chi_Minh date '+%H:%M %d/%m/%Y')"
-          git push
+          ALERTS=1
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ] || [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            echo "Chưa cài khoá Telegram/Firebase trong GitHub Secrets → chỉ cập nhật giá."; ALERTS=0
+          else
+            pip install --quiet --disable-pip-version-check firebase-admin==6.5.0
+          fi
+          save() {
+            if [ -z "$(git status --porcelain -- data/market.json data/notify.json data/notify-log.json archive)" ]; then return 0; fi
+            git add data/market.json archive
+            [ -f data/notify.json ] && git add data/notify.json
+            [ -f data/notify-log.json ] && git add data/notify-log.json
+            git commit -q -m "Cập nhật giá bạc $(TZ=Asia/Ho_Chi_Minh date '+%H:%M %d/%m/%Y')"
+            for i in 1 2 3; do
+              git pull -q --rebase --autostash origin "${GITHUB_REF_NAME}" && git push -q && return 0
+              sleep 5
+            done
+            echo "Không đẩy được lên repo lần này, sẽ thử lại."
+          }
+          start=$(date +%s); last_save=0
+          while :; do
+            python scripts/update_prices.py || echo "Lấy giá lỗi, thử lại sau."
+            [ "$ALERTS" = 1 ] && { python scripts/check_alerts.py || true; }
+            now=$(date +%s)
+            if [ $((now - last_save)) -ge "$COMMIT_EVERY_SECONDS" ]; then save; last_save=$now; fi
+            # Dừng sau LOOP_MINUTES phút, hoặc sau 22:50 giờ Việt Nam.
+            vn=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
+            if [ $((now - start + EVERY_SECONDS)) -ge $((LOOP_MINUTES * 60)) ] || [ "$vn" -ge 2250 ]; then break; fi
+            sleep "$EVERY_SECONDS"
+          done
+          save
