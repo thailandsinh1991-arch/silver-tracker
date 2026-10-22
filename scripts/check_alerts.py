@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 MARKET = ROOT / "data" / "market.json"
 NOTIFY_PUBLIC = ROOT / "data" / "notify.json"
+NOTIFY_LOG = ROOT / "data" / "notify-log.json"  # tóm tắt chẩn đoán công khai, không chứa tên/mã kênh
 APP_URL = "https://thailandsinh1991-arch.github.io/silver-tracker/#canh-bao"
 VN = timezone(timedelta(hours=7))
 KINDS = {
@@ -151,6 +152,7 @@ def main():
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     users = list(db.document("data/users").collections())
+    diag = []
     log(f"Người dùng: {len(users)} · giá: thu mua {values['buy']}, bán {values['sell']}, thế giới {values['world']}")
     for col in users:
         uid = col.id
@@ -173,6 +175,7 @@ def main():
                 new_state.update({"chatId": chat_id, "chatFor": username.lower()})
                 log(f"[{uid[:6]}] Đã liên kết Telegram @{username}")
         errors = []
+        sent = {"msg": 0, "alarm": 0}
 
         def send_msg(text):
             if not want_msg:
@@ -182,6 +185,7 @@ def main():
                 return
             try:
                 tg.send(chat_id, text)
+                sent["msg"] += 1
             except Exception as e:  # noqa: BLE001
                 errors.append(f"Tin nhắn Telegram lỗi: {e}")
 
@@ -190,6 +194,7 @@ def main():
                 return
             try:
                 alarm(topic, title, text, test)
+                sent["alarm"] += 1
             except Exception as e:  # noqa: BLE001
                 errors.append(f"Báo động ntfy lỗi: {e}")
 
@@ -227,7 +232,20 @@ def main():
             new_state["lastCallReply"] = LAST_CALL.pop("reply")[:200]
             new_state["lastCallAt"] = now
         state_ref.set(new_state, merge=True)
+        al = prof.get("alerts") or []
+        diag.append({
+            "user": len(diag) + 1, "alerts": len(al), "enabled": sum(1 for a in al if a.get("enabled")),
+            "markedAlarm": sum(1 for a in al if a.get("call")), "fired": fired,
+            "telegram": {"on": bool(settings.get("telegramOn")), "hasUsername": bool(username), "linked": bool(chat_id), "sent": sent["msg"]},
+            "alarm": {"on": bool(settings.get("alarmOn")), "topicOk": want_call, "sent": sent["alarm"]},
+            "alertsState": {"on": sum(1 for v in st_alerts.values() if v == "on"), "off": sum(1 for v in st_alerts.values() if v == "off")},
+            "errors": [re.sub(r"@\w+", "@***", e)[:200] for e in dict.fromkeys(errors)],
+        })
         log(f"[{uid[:6]}] cảnh báo kích hoạt: {fired}{' · lỗi: ' + errors[-1] if errors else ''}")
+    summary = {"users": diag, "prices": values}
+    old = json.loads(NOTIFY_LOG.read_text("utf-8")) if NOTIFY_LOG.exists() else {}
+    if test or {k: v for k, v in old.items() if k != "at"} != summary:
+        NOTIFY_LOG.write_text(json.dumps({"at": now, **summary}, ensure_ascii=False, indent=1) + "\n", "utf-8")
     return 0
 
 

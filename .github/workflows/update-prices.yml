@@ -48,13 +48,14 @@ jobs:
       - name: Lưu vào repo nếu giá thay đổi
         if: always()
         run: |
-          if git diff --quiet -- data/market.json data/notify.json && [ -z "$(git status --porcelain -- archive data/notify.json)" ]; then
+          if [ -z "$(git status --porcelain -- data/market.json data/notify.json data/notify-log.json archive)" ]; then
             echo "Không có thay đổi."; exit 0
           fi
           git config user.name "silver-tracker-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/market.json archive
           [ -f data/notify.json ] && git add data/notify.json
+          [ -f data/notify-log.json ] && git add data/notify-log.json
           git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
           git commit -m "Cập nhật giá bạc $(TZ=Asia/Ho_Chi_Minh date '+%H:%M %d/%m/%Y')"
           git push
