@@ -419,7 +419,7 @@ function txInfo(e) {
 const state = {
   tab: "market",
   boot: "loading",          // loading | ready | nodb
-  uid: null, canEditMarket: false,
+  uid: null,
   txStatus: "loading",      // loading | ready | error | signedout
   tx: [],
   marketStatus: "loading",  // loading | ready | missing | error
@@ -673,7 +673,7 @@ function renderMarket() {
   if (state.marketStatus === "loading") {
     html += `<div class="skeleton" style="height:170px"></div>`;
   } else if (state.marketStatus !== "ready" || !t) {
-    html += `<div class="card"><div class="status">${marketStatusLine()}</div><p class="small muted" style="margin:8px 0 0">Chưa có giá Phú Quý trong app. ${state.canEditMarket ? "Bạn có thể nhập giá đang niêm yết tại giabac.phuquygroup.vn." : ""}</p>${state.canEditMarket ? `<div class="btn-row" style="margin-top:12px"><button class="btn primary" data-action="price">${I.edit}Nhập giá hiện tại</button></div>` : ""}</div>`;
+    html += `<div class="card"><div class="status">${marketStatusLine()}</div><p class="small muted" style="margin:8px 0 0">Chưa có giá Phú Quý trong app. Giá sẽ hiện khi máy chủ lấy được bảng giá.</p></div>`;
   } else {
     const spread = Number(t.sell) - Number(t.buy);
     html += `<div class="card">
@@ -685,7 +685,6 @@ function renderMarket() {
       </div>
       ${spread > 0 ? `<div class="spread">Chênh lệch mua–bán <span class="num">${fmtInt(spread)} ₫</span> (${((spread / Number(t.sell)) * 100).toFixed(1).replace(".", ",")}%). Mua vào rồi bán ngay sẽ lỗ khoảng mức này.</div>` : ""}
       ${sparkline(m.history)}
-      ${state.canEditMarket ? `<div class="btn-row" style="margin-top:12px"><button class="btn" data-action="price">${I.edit}Nhập giá mới</button></div>` : ""}
     </div>`;
   }
   html += chartsCard();
@@ -759,7 +758,7 @@ function renderPortfolio() {
   } else if (state.txStatus === "ready") {
     const list = [...state.tx].sort((a, b) => -orderKey(a, b)).filter((e) => state.filter === "all" || txInfo(e).kind === state.filter);
     if (!state.tx.length) {
-      html += `<div class="card empty">${I.briefcase}<h3>Chưa có giao dịch</h3><p class="small muted" style="margin:0;max-width:40ch">Thêm giao dịch mua hoặc bán để bắt đầu theo dõi, hoặc nhập lịch sử từ app Silver Tracker cũ.</p><div class="btn-row" style="justify-content:center;margin-top:4px"><button class="btn primary" data-action="add">${I.plus}Thêm giao dịch</button><button class="btn" data-action="import">${I.upload}Nhập từ app cũ</button></div></div>`;
+      html += `<div class="card empty">${I.briefcase}<h3>Chưa có giao dịch</h3><p class="small muted" style="margin:0;max-width:40ch">Thêm giao dịch mua hoặc bán để bắt đầu theo dõi, hoặc nhập lịch sử từ app Silver Tracker cũ.</p><div class="btn-row" style="justify-content:center;margin-top:4px"><button class="btn primary" data-action="add">${I.plus}Thêm giao dịch</button><button class="btn" data-action="import">${I.upload}Nhập tệp sao lưu</button></div></div>`;
     } else if (!list.length) {
       html += `<div class="card empty"><h3>${state.filter === "sell" ? "Chưa có giao dịch bán" : "Chưa có giao dịch mua"}</h3><p class="small muted" style="margin:0">Chọn Tất cả để xem các giao dịch khác.</p></div>`;
     } else {
@@ -768,7 +767,7 @@ function renderPortfolio() {
   }
 
   if (state.txStatus === "ready") {
-    html += `<div class="btn-row"><button class="btn ghost" data-action="import">${I.upload}Nhập từ app cũ</button>${state.downloads && state.tx.length ? `<button class="btn ghost" data-action="export">${I.download}Sao lưu JSON</button>` : ""}</div>`;
+    html += `<div class="btn-row"><button class="btn ghost" data-action="import">${I.upload}Nhập tệp sao lưu</button>${state.downloads && state.tx.length ? `<button class="btn ghost" data-action="export">${I.download}Sao lưu JSON</button>` : ""}</div>`;
   }
   html += `<p class="foot">Giá trị hiện tại dùng giá thu mua Phú Quý (mua vào), không dùng giá bán ra. Giá vốn mua có phí; phí bán được trừ khỏi tiền thu. Giá vốn tính theo bình quân gia quyền theo từng thương hiệu.</p>${state.cloud === "signedin"
     ? `<p class="foot"><b>Đang đồng bộ theo tài khoản ${esc(state.user?.email || "Google")}.</b> Giao dịch và cảnh báo tự tải lại trên mọi máy đăng nhập cùng tài khoản; chỉ bạn đọc được dữ liệu này.</p>`
@@ -1101,41 +1100,10 @@ function hasOverdraw(rows) {
   return sells.some((s) => saleWouldOverdraw(rows.filter((r) => r !== s), s, s._id));
 }
 
-function priceForm() {
-  const t = target();
-  openSheet(`<h3 id="sheet-title">Nhập giá Phú Quý</h3>
-    <p class="tiny muted" style="margin:4px 0 0">Bạc miếng Phú Quý 999 1 lượng, theo bảng giá tại giabac.phuquygroup.vn.</p>
-    <form id="p-form" novalidate>
-      <div class="grid2">
-        <div class="field"><label for="p-buy">Thu mua (₫/lượng)</label><input id="p-buy" inputmode="numeric" value="${t ? esc(fmtInt(t.buy)) : ""}" required></div>
-        <div class="field"><label for="p-sell">Bán ra (₫/lượng)</label><input id="p-sell" inputmode="numeric" value="${t && Number(t.sell) > 0 ? esc(fmtInt(t.sell)) : ""}"></div>
-      </div>
-      <div class="field"><span class="err" id="p-err" role="alert"></span></div>
-      <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="p-save">Cập nhật giá</button></div>
-    </form>`, "#p-buy");
-  $("#p-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const buy = parseMoney($("#p-buy").value), sellRaw = $("#p-sell").value.trim(), sell = sellRaw ? parseMoney(sellRaw) : null;
-    if (!(buy >= 100000 && buy <= 100000000)) { $("#p-err").textContent = "Giá thu mua phải nằm trong khoảng 100.000 – 100.000.000 ₫/lượng."; return; }
-    if (sell != null && !(sell >= buy)) { $("#p-err").textContent = "Giá bán ra phải lớn hơn hoặc bằng giá thu mua."; return; }
-    $("#p-save").disabled = true;
-    const now = new Date().toISOString();
-    const prev = state.market || {};
-    const history = [...(Array.isArray(prev.history) ? prev.history : []), { at: now, buy, sell }].slice(-240);
-    const next = { ...prev, target: { name: prev.target?.name || "BẠC MIẾNG PHÚ QUÝ 999 1 LƯỢNG", buy, sell }, priceAsOf: now, source: "manual", history };
-    try { await db.doc("market/phuquy").set(next); closeSheet(); toast("Đã cập nhật giá"); }
-    catch (err) { $("#p-save").disabled = false; $("#p-err").textContent = writeErrorText(err); }
-  });
-}
-
 /* ---------- import / export ---------- */
 function importForm() {
   openSheet(`<h3 id="sheet-title">Nhập lịch sử / tệp sao lưu</h3>
-    <p class="small muted" style="margin:6px 0 0">Chọn tệp <span class="num">silver-tracker-….json</span> đã sao lưu từ Silver Tracker (bản Claude hoặc bản này). Hoặc dán dữ liệu JSON của bảng <span class="num">journal_entries</span>. Lấy bằng một trong hai cách:</p>
-    <ol class="small muted" style="margin:6px 0 0;padding-left:18px;display:grid;gap:4px">
-      <li>Mở <span class="num">https://&lt;app-cũ&gt;/api/journal</span> rồi sao chép toàn bộ nội dung.</li>
-      <li>Trong Database của Replit, chạy <span class="num" style="user-select:all">SELECT json_agg(j ORDER BY j.id) FROM journal_entries j;</span> rồi sao chép kết quả.</li>
-    </ol>
+    <p class="small muted" style="margin:6px 0 0">Chọn tệp <span class="num">silver-tracker-….json</span> đã sao lưu từ Silver Tracker, hoặc dán nội dung JSON vào ô dưới. Giao dịch trùng sẽ được bỏ qua.</p>
     <form id="i-form" novalidate>
       <div class="field"><label for="i-text">Dữ liệu JSON</label><textarea id="i-text" spellcheck="false" placeholder='[{"id":1,"date":"12/03/2026","so_luong":"2.0000","gia_mua":2850000,...}]'></textarea>
         <span class="hint">Hoặc chọn tệp .json: <input id="i-file" type="file" accept=".json,application/json,text/plain" style="font-size:11px"></span></div>
@@ -1603,7 +1571,7 @@ async function migrateLocal(fs, uid) {
     }
     if (!profSnap.exists && localProfile?.alerts?.length) await base.set(JSON.parse(JSON.stringify(localProfile)));
     return moved;
-  } catch { toast("Chưa chuyển được giao dịch trong máy lên tài khoản. Có thể dùng “Nhập từ app cũ”."); return -1; }
+  } catch { toast("Chưa chuyển được giao dịch trong máy lên tài khoản. Có thể dùng “Nhập tệp sao lưu”."); return -1; }
 }
 
 async function signIn() {
@@ -1665,7 +1633,6 @@ async function boot() {
   if (location.hash === "#canh-bao") state.tab = "alerts";
   state.boot = "ready";
   state.downloads = localDownloads;
-  state.canEditMarket = false;
   subscribeMarket();
   loadChartArchive();
   loadNotifyPublic();
@@ -1694,7 +1661,6 @@ document.addEventListener("click", (e) => {
   const a = act.dataset.action;
   if (a === "close") closeSheet();
   else if (a === "add") txForm(null);
-  else if (a === "price") priceForm();
   else if (a === "import") importForm();
   else if (a === "export") exportJson();
   else if (a === "retry-tx") subscribeTx();
