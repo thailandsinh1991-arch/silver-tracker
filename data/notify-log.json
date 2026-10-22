@@ -1,10 +1,10 @@
 {
- "at": "2026-10-22T06:39:25Z",
+ "at": "2026-10-22T06:51:29Z",
  "users": [
   {
    "user": 1,
-   "alerts": 2,
-   "enabled": 2,
+   "alerts": 1,
+   "enabled": 1,
    "markedAlarm": 1,
    "fired": 0,
    "telegram": {
@@ -21,7 +21,7 @@
    "alertsState": {
     "on": 0,
     "pending": 0,
-    "off": 2
+    "off": 1
    },
    "errors": []
   }
