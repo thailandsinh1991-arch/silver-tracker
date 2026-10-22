@@ -2,9 +2,9 @@ name: Cập nhật giá bạc
 
 on:
   schedule:
-    # Lịch GitHub hay chạy trễ, nên mỗi lần chạy ở lại ~50 phút và kiểm tra giá mỗi 2 phút.
-    # Lượt mới xếp hàng chờ lượt đang chạy (concurrency) → gần như liên tục từ 07:00 đến 22:50 giờ VN.
-    - cron: "*/10 0-15 * * *"
+    # Mỗi lượt chạy liền ~5,5 giờ, kiểm tra giá mỗi phút, rồi TỰ khởi động lượt kế tiếp (không chờ lịch GitHub).
+    # Lịch dưới đây chỉ là dự phòng/khởi động buổi sáng; nếu đang có lượt chạy thì lượt mới chỉ xếp hàng.
+    - cron: "7,37 0-15 * * *"
   workflow_dispatch:
     inputs:
       test_notify:
@@ -14,21 +14,22 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
-  # Chạy tay (gửi thử) không phải chờ lượt tự động đang chạy.
-  group: update-prices-${{ github.event_name }}
+  # Chỉ một vòng lặp chạy tại một thời điểm; gửi thử không phải chờ vòng lặp.
+  group: update-prices-${{ inputs.test_notify && 'test' || 'loop' }}
   cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 350
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      LOOP_MINUTES: ${{ inputs.test_notify && '0' || '50' }}
-      EVERY_SECONDS: "120"
+      LOOP_MINUTES: ${{ inputs.test_notify && '0' || '330' }}
+      EVERY_SECONDS: "60"
       COMMIT_EVERY_SECONDS: "720"
     steps:
       - uses: actions/checkout@v4
@@ -47,7 +48,7 @@ jobs:
           python scripts/update_prices.py || true
           python scripts/check_alerts.py
 
-      - name: Lấy giá, kiểm tra cảnh báo (lặp mỗi 2 phút), lưu vào repo
+      - name: Lấy giá, kiểm tra cảnh báo (lặp mỗi phút), lưu vào repo
         if: ${{ !inputs.test_notify }}
         run: |
           git config user.name "silver-tracker-bot"
@@ -82,3 +83,13 @@ jobs:
             sleep "$EVERY_SECONDS"
           done
           save
+
+      - name: Tự khởi động lượt kế tiếp
+        if: ${{ !inputs.test_notify && !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          vn=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
+          if [ "$vn" -ge 2250 ] || [ "$vn" -lt 0650 ]; then echo "Ngoài giờ kiểm tra, dừng tới sáng."; exit 0; fi
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/workflows/update-prices.yml/dispatches" -f ref="${GITHUB_REF_NAME}" \
+            && echo "Đã khởi động lượt kế tiếp." || echo "Không tự khởi động được; lịch dự phòng sẽ chạy."

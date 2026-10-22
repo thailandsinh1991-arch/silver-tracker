@@ -30,7 +30,7 @@ Sau mỗi lần cập nhật giá, `scripts/check_alerts.py` so giá với cản
 - gửi tin nhắn qua bot Telegram của repo cho mọi cảnh báo vừa kích hoạt;
 - cho điện thoại reo qua ứng dụng [ntfy](https://ntfy.sh) (miễn phí, mã nguồn mở) với cảnh báo được đánh dấu “báo động”. Mỗi người có một mã kênh ngẫu nhiên do app tạo; mã kênh như mật khẩu, không chia sẻ.
 
-Máy chủ kiểm tra giá khoảng mỗi 2 phút từ 07:00 đến 22:50. Mỗi cảnh báo chỉ báo một lần khi giá vượt mức; giá quay lại thì sẵn sàng báo lần sau.
+Máy chủ kiểm tra giá khoảng mỗi phút từ 07:00 đến 22:50. Mỗi cảnh báo chỉ báo một lần khi giá vượt mức; giá quay lại thì sẵn sàng báo lần sau.
 
 Cần 2 GitHub Secrets (Settings → Secrets and variables → Actions):
 - `TELEGRAM_BOT_TOKEN` – mã bot lấy từ @BotFather.

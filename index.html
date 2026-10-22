@@ -838,7 +838,7 @@ function notifyCard() {
     return h + `<p class="small muted" style="margin:10px 0 0">Đăng nhập Google để nhận tin nhắn và cuộc gọi khi giá chạm mức, kể cả lúc không mở app. Máy chủ kiểm tra giá chỉ đọc được cảnh báo lưu theo tài khoản.</p></div>`;
   }
   if (!s.telegramUsername && !s.alarmOn) {
-    return h + `<p class="small muted" style="margin:10px 0 0">Chưa cài đặt. Khi bật, máy chủ kiểm tra giá khoảng mỗi 2 phút (07:00–22:50), gửi tin nhắn Telegram và cho điện thoại reo (ứng dụng ntfy) với cảnh báo bạn đánh dấu “báo động”, kể cả khi bạn không mở app.</p></div>`;
+    return h + `<p class="small muted" style="margin:10px 0 0">Chưa cài đặt. Khi bật, máy chủ kiểm tra giá khoảng mỗi phút (07:00–22:50), gửi tin nhắn Telegram và cho điện thoại reo (ứng dụng ntfy) với cảnh báo bạn đánh dấu “báo động”, kể cả khi bạn không mở app.</p></div>`;
   }
   const linked = st.chatId && st.chatFor === String(s.telegramUsername).replace(/^@/, "").toLowerCase();
   const rows = [
@@ -877,7 +877,7 @@ function notifySettingsForm() {
       </ol>
       <div class="field"><label for="n-topic">Mã kênh ntfy của bạn (giữ riêng, như mật khẩu)</label>
         <div style="display:flex;gap:6px"><input id="n-topic" value="${esc(topic)}" readonly style="flex:1;font-family:var(--font-num);font-size:13px"><button type="button" class="btn" id="n-copy">Sao chép</button></div></div>
-      <p class="tiny muted" style="margin:0">Máy chủ kiểm tra giá khoảng mỗi 2 phút từ 07:00 đến 22:50. Mỗi lần giá vượt mức chỉ báo một lần. Cần wifi hoặc 4G.</p>
+      <p class="tiny muted" style="margin:0">Máy chủ kiểm tra giá khoảng mỗi phút từ 07:00 đến 22:50. Mỗi lần giá vượt mức chỉ báo một lần. Cần wifi hoặc 4G.</p>
       <div class="field"><span class="err" id="n-err" role="alert"></span></div>
       <div class="actions"><button type="button" class="btn" data-action="close">Hủy</button><button type="submit" class="btn primary" id="n-save">Lưu</button></div>
     </form>`, "#n-user");
