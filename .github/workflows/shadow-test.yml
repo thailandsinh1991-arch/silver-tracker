@@ -1,0 +1,39 @@
+name: Thử PriceEngine (shadow, không ghi giá thật)
+on:
+  push:
+    branches: [shadow-test]
+permissions:
+  contents: write
+jobs:
+  shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Unit tests
+        run: python -m unittest discover -s scripts -p "test_price_engine.py" 2>&1 | tail -3
+      - name: Shadow 4 vòng, cách 60 giây
+        run: |
+          python scripts/update_prices.py --shadow-only --cycles 4 --interval 60 > /dev/null || true
+          python - <<'PY'
+          import json
+          d = json.load(open("tmp/shadow-price-comparison.json"))
+          def short(c):
+              pq, x = c["phuQuy"], c["xagUsd"]
+              return {"at": c["comparedAt"], "pqLegacy": [pq["legacy"]["buy"], pq["legacy"]["sell"], pq["legacy"]["priceAsOf"], pq["legacy"]["latencyMs"]],
+                      "pqEngine": [pq["engine"]["buy"], pq["engine"]["sell"], pq["engine"]["sourceTimestamp"], pq["engine"]["sourceName"], pq["engine"]["freshnessStatus"], pq["engine"]["latencyMs"]],
+                      "xagLegacy": [x["legacy"]["usdPerOz"], x["legacy"]["asOf"], x["legacy"]["source"]],
+                      "xagEngine": [x["engine"]["price"], x["engine"]["sourceTimestamp"], x["engine"]["sourceName"], x["engine"]["freshnessStatus"]],
+                      "legacyErrors": c["legacyErrors"], "compat": c["backwardCompatibility"]["allPassed"],
+                      "health": {k: [v["staleStatus"], v["failureReason"], v["lastLatencyMs"], (v.get("lastError") or v.get("whySelectedOrRejected") or "")[:140]] for k, v in c["sourceHealth"]["sources"].items()}}
+          out = {"cycles": [short(c) for c in d["cycles"]]}
+          json.dump(out, open("tmp/shadow-summary.json", "w"), ensure_ascii=False, indent=1)
+          PY
+      - name: Lưu kết quả vào nhánh shadow-test
+        run: |
+          git config user.name "silver-tracker-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f tmp/shadow-summary.json tmp/shadow-price-comparison.json
+          git commit -q -m "Kết quả shadow test $(TZ=Asia/Ho_Chi_Minh date '+%H:%M %d/%m')" && git push -q origin shadow-test
