@@ -1,0 +1,348 @@
+{
+ "cycles": [
+  {
+   "at": "2026-10-26T14:37:22Z",
+   "pqLegacy": [
+    1764000,
+    1819000,
+    "2026-10-26T18:24:00+07:00",
+    1557
+   ],
+   "pqEngine": [
+    1764000,
+    1819000,
+    "2026-10-26T18:24:00+07:00",
+    "pq_official_ajax",
+    "MARKET_CLOSED",
+    5090
+   ],
+   "xagLegacy": [
+    53.64,
+    "2026-10-26T10:36:00-04:00",
+    "Kitco (giá bid)"
+   ],
+   "xagEngine": [
+    53.85,
+    "2026-10-26T14:37:32Z",
+    "swissquote_bbo",
+    "LIVE"
+   ],
+   "legacyErrors": [],
+   "compat": true,
+   "health": {
+    "pq_official_ajax": [
+     "MARKET_CLOSED",
+     "NONE",
+     5090,
+     "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+    ],
+    "pq_official_html": [
+     "MARKET_CLOSED",
+     "NONE",
+     1558,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "giabac_vn_json": [
+     "MARKET_CLOSED",
+     "NONE",
+     2033,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "giabac_vn_html": [
+     "MARKET_CLOSED",
+     "NONE",
+     1289,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "swissquote_bbo": [
+     "LIVE",
+     "NONE",
+     412,
+     "Selected swissquote_bbo (53.85 USD/oz, status=LIVE, market=MARKET_OPEN)"
+    ],
+    "yahoo_xag": [
+     "FRESH",
+     "NONE",
+     121,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "kitco_silver": [
+     "FRESH",
+     "NONE",
+     106,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "phuquy_world_json": [
+     "FRESH",
+     "NONE",
+     2657,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "giabac_world_json": [
+     "FRESH",
+     "NONE",
+     1523,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ]
+   }
+  },
+  {
+   "at": "2026-10-26T14:38:40Z",
+   "pqLegacy": [
+    1764000,
+    1819000,
+    "2026-10-26T18:24:00+07:00",
+    2838
+   ],
+   "pqEngine": [
+    1764000,
+    1819000,
+    "2026-10-26T18:24:00+07:00",
+    "pq_official_ajax",
+    "MARKET_CLOSED",
+    4047
+   ],
+   "xagLegacy": [
+    53.68,
+    "2026-10-26T10:37:00-04:00",
+    "Kitco (giá bid)"
+   ],
+   "xagEngine": [
+    53.9,
+    "2026-10-26T14:38:50Z",
+    "swissquote_bbo",
+    "LIVE"
+   ],
+   "legacyErrors": [],
+   "compat": true,
+   "health": {
+    "pq_official_ajax": [
+     "MARKET_CLOSED",
+     "NONE",
+     4047,
+     "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+    ],
+    "pq_official_html": [
+     "MARKET_CLOSED",
+     "NONE",
+     1516,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "giabac_vn_json": [
+     "MARKET_CLOSED",
+     "NONE",
+     1773,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "giabac_vn_html": [
+     "MARKET_CLOSED",
+     "NONE",
+     1979,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "swissquote_bbo": [
+     "LIVE",
+     "NONE",
+     362,
+     "Selected swissquote_bbo (53.9 USD/oz, status=LIVE, market=MARKET_OPEN)"
+    ],
+    "yahoo_xag": [
+     "FRESH",
+     "NONE",
+     90,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "kitco_silver": [
+     "FRESH",
+     "NONE",
+     180,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "phuquy_world_json": [
+     "FRESH",
+     "NONE",
+     1505,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "giabac_world_json": [
+     "FRESH",
+     "NONE",
+     1475,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ]
+   }
+  },
+  {
+   "at": "2026-10-26T14:39:55Z",
+   "pqLegacy": [
+    1764000,
+    1819000,
+    "2026-10-26T18:24:00+07:00",
+    1518
+   ],
+   "pqEngine": [
+    1764000,
+    1819000,
+    "2026-10-26T18:24:00+07:00",
+    "pq_official_ajax",
+    "MARKET_CLOSED",
+    14282
+   ],
+   "xagLegacy": [
+    53.76,
+    "2026-10-26T10:39:00-04:00",
+    "Kitco (giá bid)"
+   ],
+   "xagEngine": [
+    53.92,
+    "2026-10-26T14:40:13Z",
+    "swissquote_bbo",
+    "LIVE"
+   ],
+   "legacyErrors": [],
+   "compat": true,
+   "health": {
+    "pq_official_ajax": [
+     "MARKET_CLOSED",
+     "NONE",
+     14282,
+     "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+    ],
+    "pq_official_html": [
+     "MARKET_CLOSED",
+     "NONE",
+     1040,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "giabac_vn_json": [
+     "MARKET_CLOSED",
+     "NONE",
+     2104,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "giabac_vn_html": [
+     "MARKET_CLOSED",
+     "NONE",
+     1521,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "swissquote_bbo": [
+     "LIVE",
+     "NONE",
+     303,
+     "Selected swissquote_bbo (53.92 USD/oz, status=LIVE, market=MARKET_OPEN)"
+    ],
+    "yahoo_xag": [
+     "FRESH",
+     "NONE",
+     103,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "kitco_silver": [
+     "FRESH",
+     "NONE",
+     168,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "phuquy_world_json": [
+     "FRESH",
+     "NONE",
+     1281,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "giabac_world_json": [
+     "FRESH",
+     "NONE",
+     1468,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ]
+   }
+  },
+  {
+   "at": "2026-10-26T14:41:18Z",
+   "pqLegacy": [
+    1764000,
+    1819000,
+    "2026-10-26T18:24:00+07:00",
+    1042
+   ],
+   "pqEngine": [
+    1764000,
+    1819000,
+    "2026-10-26T18:24:00+07:00",
+    "pq_official_ajax",
+    "MARKET_CLOSED",
+    3926
+   ],
+   "xagLegacy": [
+    53.81,
+    "2026-10-26T10:40:00-04:00",
+    "Kitco (giá bid)"
+   ],
+   "xagEngine": [
+    53.93,
+    "2026-10-26T14:41:26Z",
+    "swissquote_bbo",
+    "LIVE"
+   ],
+   "legacyErrors": [],
+   "compat": true,
+   "health": {
+    "pq_official_ajax": [
+     "MARKET_CLOSED",
+     "NONE",
+     3926,
+     "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+    ],
+    "pq_official_html": [
+     "MARKET_CLOSED",
+     "NONE",
+     1040,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "giabac_vn_json": [
+     "MARKET_CLOSED",
+     "NONE",
+     1767,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "giabac_vn_html": [
+     "MARKET_CLOSED",
+     "NONE",
+     1743,
+     "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+    ],
+    "swissquote_bbo": [
+     "LIVE",
+     "NONE",
+     357,
+     "Selected swissquote_bbo (53.93 USD/oz, status=LIVE, market=MARKET_OPEN)"
+    ],
+    "yahoo_xag": [
+     "FRESH",
+     "NONE",
+     98,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "kitco_silver": [
+     "FRESH",
+     "NONE",
+     111,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "phuquy_world_json": [
+     "FRESH",
+     "NONE",
+     1019,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ],
+    "giabac_world_json": [
+     "FRESH",
+     "NONE",
+     1005,
+     "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+    ]
+   }
+  }
+ ]
+}

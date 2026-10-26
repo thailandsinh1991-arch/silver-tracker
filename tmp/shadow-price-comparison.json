@@ -1,0 +1,1415 @@
+{
+  "cyclesRun": 4,
+  "latest": {
+    "comparedAt": "2026-10-26T14:41:18Z",
+    "phuQuy": {
+      "legacy": {
+        "buy": 1764000,
+        "sell": 1819000,
+        "priceAsOf": "2026-10-26T18:24:00+07:00",
+        "fetchedAt": "2026-10-26T14:41:18Z",
+        "source": "phuquy",
+        "freshFetchSucceeded": true,
+        "latencyMs": 1042
+      },
+      "engine": {
+        "buy": 1764000,
+        "sell": 1819000,
+        "sourceTimestamp": "2026-10-26T18:24:00+07:00",
+        "fetchedTimestamp": "2026-10-26T14:41:18Z",
+        "sourceName": "pq_official_ajax",
+        "adapter": "json_datetime+adapter_css_classes",
+        "latencyMs": 3926,
+        "freshnessStatus": "MARKET_CLOSED",
+        "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+        "usedLastKnownGood": false,
+        "confirmedBy": [
+          "pq_official_html",
+          "giabac_vn_json",
+          "giabac_vn_html"
+        ],
+        "disagreement": null
+      },
+      "difference": {
+        "buyAbsolute": 0,
+        "buyPercent": 0.0,
+        "sellAbsolute": 0,
+        "sellPercent": 0.0,
+        "timestampDifferenceSeconds": 0,
+        "whichIsFresher": "equal"
+      }
+    },
+    "xagUsd": {
+      "legacy": {
+        "usdPerOz": 53.81,
+        "asOf": "2026-10-26T10:40:00-04:00",
+        "fetchedAt": "2026-10-26T14:41:18Z",
+        "source": "Kitco (giá bid)",
+        "freshFetchSucceeded": true,
+        "latencyMs": 76
+      },
+      "engine": {
+        "price": 53.93,
+        "sourceTimestamp": "2026-10-26T14:41:26Z",
+        "fetchedTimestamp": "2026-10-26T14:41:18Z",
+        "sourceName": "swissquote_bbo",
+        "adapter": "swissquote_bbo_json",
+        "latencyMs": 357,
+        "freshnessStatus": "LIVE",
+        "marketStatus": "MARKET_OPEN",
+        "usedLastKnownGood": false,
+        "confirmedBy": [
+          "yahoo_xag",
+          "kitco_silver",
+          "phuquy_world_json",
+          "giabac_world_json"
+        ],
+        "disagreement": null
+      },
+      "difference": {
+        "absolute": 0.12,
+        "percent": 0.223,
+        "timestampDifferenceSeconds": 86,
+        "whichIsFresher": "engine"
+      }
+    },
+    "legacyErrors": [],
+    "backwardCompatibility": {
+      "allPassed": true,
+      "fieldChecks": {
+        "target": true,
+        "items": true,
+        "priceAsOf": true,
+        "itemsAsOf": true,
+        "source": true,
+        "world": true,
+        "history": true,
+        "worldHistory": true,
+        "fetchedAt": true,
+        "errors": true,
+        "additive_sourceHealth": true,
+        "additive_marketStatus": true,
+        "additive_freshnessStatus": true,
+        "additive_engineMetadata": true
+      }
+    },
+    "sourceHealth": {
+      "updatedAt": "2026-10-26T14:41:18Z",
+      "phuQuyMarketStatus": "MARKET_CLOSED_AFTER_HOURS",
+      "phuQuyFreshness": "MARKET_CLOSED",
+      "xagMarketStatus": "MARKET_OPEN",
+      "xagFreshness": "LIVE",
+      "disagreements": {
+        "phuQuy": null,
+        "xagUsd": null
+      },
+      "sources": {
+        "pq_official_ajax": {
+          "sourceName": "pq_official_ajax",
+          "adapter": "json_datetime+adapter_css_classes",
+          "currentlySelected": true,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 3926,
+          "lastValue": {
+            "buy": 1764000,
+            "sell": 1819000
+          },
+          "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "MARKET_CLOSED",
+          "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+        },
+        "pq_official_html": {
+          "sourceName": "pq_official_html",
+          "adapter": "adapter_css_classes",
+          "currentlySelected": false,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 1040,
+          "lastValue": {
+            "buy": 1764000,
+            "sell": 1819000
+          },
+          "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "MARKET_CLOSED",
+          "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+        },
+        "giabac_vn_json": {
+          "sourceName": "giabac_vn_json",
+          "adapter": "giabac_sql_chart_json",
+          "currentlySelected": false,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 1767,
+          "lastValue": {
+            "buy": 1764000,
+            "sell": 1819000
+          },
+          "lastSourceTimestamp": "2026-10-26T08:30:00+07:00",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "MARKET_CLOSED",
+          "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+        },
+        "giabac_vn_html": {
+          "sourceName": "giabac_vn_html",
+          "adapter": "adapter_table_heuristic",
+          "currentlySelected": false,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 1743,
+          "lastValue": {
+            "buy": 1764000,
+            "sell": 1819000
+          },
+          "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "MARKET_CLOSED",
+          "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+        },
+        "swissquote_bbo": {
+          "sourceName": "swissquote_bbo",
+          "adapter": "swissquote_bbo_json",
+          "currentlySelected": true,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 357,
+          "lastValue": {
+            "usdPerOz": 53.93
+          },
+          "lastSourceTimestamp": "2026-10-26T14:41:26Z",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "LIVE",
+          "marketStatus": "MARKET_OPEN",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Selected swissquote_bbo (53.93 USD/oz, status=LIVE, market=MARKET_OPEN)"
+        },
+        "yahoo_xag": {
+          "sourceName": "yahoo_xag",
+          "adapter": "yahoo_chart_v8_json",
+          "currentlySelected": false,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 98,
+          "lastValue": {
+            "usdPerOz": 53.73
+          },
+          "lastSourceTimestamp": "2026-10-26T14:31:25Z",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "FRESH",
+          "marketStatus": "MARKET_OPEN",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+        },
+        "kitco_silver": {
+          "sourceName": "kitco_silver",
+          "adapter": "kitco_text_regex",
+          "currentlySelected": false,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 111,
+          "lastValue": {
+            "usdPerOz": 53.81
+          },
+          "lastSourceTimestamp": "2026-10-26T10:40:00-04:00",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "FRESH",
+          "marketStatus": "MARKET_OPEN",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+        },
+        "phuquy_world_json": {
+          "sourceName": "phuquy_world_json",
+          "adapter": "dotnet_world_silver_json",
+          "currentlySelected": false,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 1019,
+          "lastValue": {
+            "usdPerOz": 53.95
+          },
+          "lastSourceTimestamp": "2026-10-26T14:39:07Z",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "FRESH",
+          "marketStatus": "MARKET_OPEN",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+        },
+        "giabac_world_json": {
+          "sourceName": "giabac_world_json",
+          "adapter": "dotnet_world_silver_json",
+          "currentlySelected": false,
+          "lastSuccess": "2026-10-26T14:41:18Z",
+          "lastFailure": null,
+          "consecutiveFailures": 0,
+          "lastLatencyMs": 1005,
+          "lastValue": {
+            "usdPerOz": 53.95
+          },
+          "lastSourceTimestamp": "2026-10-26T14:40:30Z",
+          "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+          "staleStatus": "FRESH",
+          "marketStatus": "MARKET_OPEN",
+          "failureReason": "NONE",
+          "lastError": null,
+          "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+        }
+      }
+    }
+  },
+  "cycles": [
+    {
+      "comparedAt": "2026-10-26T14:37:22Z",
+      "phuQuy": {
+        "legacy": {
+          "buy": 1764000,
+          "sell": 1819000,
+          "priceAsOf": "2026-10-26T18:24:00+07:00",
+          "fetchedAt": "2026-10-26T14:37:22Z",
+          "source": "phuquy",
+          "freshFetchSucceeded": true,
+          "latencyMs": 1557
+        },
+        "engine": {
+          "buy": 1764000,
+          "sell": 1819000,
+          "sourceTimestamp": "2026-10-26T18:24:00+07:00",
+          "fetchedTimestamp": "2026-10-26T14:37:22Z",
+          "sourceName": "pq_official_ajax",
+          "adapter": "json_datetime+adapter_css_classes",
+          "latencyMs": 5090,
+          "freshnessStatus": "MARKET_CLOSED",
+          "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+          "usedLastKnownGood": false,
+          "confirmedBy": [
+            "pq_official_html",
+            "giabac_vn_json",
+            "giabac_vn_html"
+          ],
+          "disagreement": null
+        },
+        "difference": {
+          "buyAbsolute": 0,
+          "buyPercent": 0.0,
+          "sellAbsolute": 0,
+          "sellPercent": 0.0,
+          "timestampDifferenceSeconds": 0,
+          "whichIsFresher": "equal"
+        }
+      },
+      "xagUsd": {
+        "legacy": {
+          "usdPerOz": 53.64,
+          "asOf": "2026-10-26T10:36:00-04:00",
+          "fetchedAt": "2026-10-26T14:37:22Z",
+          "source": "Kitco (giá bid)",
+          "freshFetchSucceeded": true,
+          "latencyMs": 265
+        },
+        "engine": {
+          "price": 53.85,
+          "sourceTimestamp": "2026-10-26T14:37:32Z",
+          "fetchedTimestamp": "2026-10-26T14:37:22Z",
+          "sourceName": "swissquote_bbo",
+          "adapter": "swissquote_bbo_json",
+          "latencyMs": 412,
+          "freshnessStatus": "LIVE",
+          "marketStatus": "MARKET_OPEN",
+          "usedLastKnownGood": false,
+          "confirmedBy": [
+            "yahoo_xag",
+            "kitco_silver",
+            "phuquy_world_json",
+            "giabac_world_json"
+          ],
+          "disagreement": null
+        },
+        "difference": {
+          "absolute": 0.21,
+          "percent": 0.3915,
+          "timestampDifferenceSeconds": 92,
+          "whichIsFresher": "engine"
+        }
+      },
+      "legacyErrors": [],
+      "backwardCompatibility": {
+        "allPassed": true,
+        "fieldChecks": {
+          "target": true,
+          "items": true,
+          "priceAsOf": true,
+          "itemsAsOf": true,
+          "source": true,
+          "world": true,
+          "history": true,
+          "worldHistory": true,
+          "fetchedAt": true,
+          "errors": true,
+          "additive_sourceHealth": true,
+          "additive_marketStatus": true,
+          "additive_freshnessStatus": true,
+          "additive_engineMetadata": true
+        }
+      },
+      "sourceHealth": {
+        "updatedAt": "2026-10-26T14:37:22Z",
+        "phuQuyMarketStatus": "MARKET_CLOSED_AFTER_HOURS",
+        "phuQuyFreshness": "MARKET_CLOSED",
+        "xagMarketStatus": "MARKET_OPEN",
+        "xagFreshness": "LIVE",
+        "disagreements": {
+          "phuQuy": null,
+          "xagUsd": null
+        },
+        "sources": {
+          "pq_official_ajax": {
+            "sourceName": "pq_official_ajax",
+            "adapter": "json_datetime+adapter_css_classes",
+            "currentlySelected": true,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 5090,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+          },
+          "pq_official_html": {
+            "sourceName": "pq_official_html",
+            "adapter": "adapter_css_classes",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1558,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "giabac_vn_json": {
+            "sourceName": "giabac_vn_json",
+            "adapter": "giabac_sql_chart_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 2033,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T08:30:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "giabac_vn_html": {
+            "sourceName": "giabac_vn_html",
+            "adapter": "adapter_table_heuristic",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1289,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "swissquote_bbo": {
+            "sourceName": "swissquote_bbo",
+            "adapter": "swissquote_bbo_json",
+            "currentlySelected": true,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 412,
+            "lastValue": {
+              "usdPerOz": 53.85
+            },
+            "lastSourceTimestamp": "2026-10-26T14:37:32Z",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "LIVE",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Selected swissquote_bbo (53.85 USD/oz, status=LIVE, market=MARKET_OPEN)"
+          },
+          "yahoo_xag": {
+            "sourceName": "yahoo_xag",
+            "adapter": "yahoo_chart_v8_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 121,
+            "lastValue": {
+              "usdPerOz": 53.69
+            },
+            "lastSourceTimestamp": "2026-10-26T14:27:27Z",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "kitco_silver": {
+            "sourceName": "kitco_silver",
+            "adapter": "kitco_text_regex",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 106,
+            "lastValue": {
+              "usdPerOz": 53.68
+            },
+            "lastSourceTimestamp": "2026-10-26T10:36:00-04:00",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "phuquy_world_json": {
+            "sourceName": "phuquy_world_json",
+            "adapter": "dotnet_world_silver_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 2657,
+            "lastValue": {
+              "usdPerOz": 53.87
+            },
+            "lastSourceTimestamp": "2026-10-26T14:35:14Z",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "giabac_world_json": {
+            "sourceName": "giabac_world_json",
+            "adapter": "dotnet_world_silver_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:37:22Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1523,
+            "lastValue": {
+              "usdPerOz": 53.87
+            },
+            "lastSourceTimestamp": "2026-10-26T14:37:27Z",
+            "lastFetchedTimestamp": "2026-10-26T14:37:22Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          }
+        }
+      }
+    },
+    {
+      "comparedAt": "2026-10-26T14:38:40Z",
+      "phuQuy": {
+        "legacy": {
+          "buy": 1764000,
+          "sell": 1819000,
+          "priceAsOf": "2026-10-26T18:24:00+07:00",
+          "fetchedAt": "2026-10-26T14:38:40Z",
+          "source": "phuquy",
+          "freshFetchSucceeded": true,
+          "latencyMs": 2838
+        },
+        "engine": {
+          "buy": 1764000,
+          "sell": 1819000,
+          "sourceTimestamp": "2026-10-26T18:24:00+07:00",
+          "fetchedTimestamp": "2026-10-26T14:38:40Z",
+          "sourceName": "pq_official_ajax",
+          "adapter": "json_datetime+adapter_css_classes",
+          "latencyMs": 4047,
+          "freshnessStatus": "MARKET_CLOSED",
+          "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+          "usedLastKnownGood": false,
+          "confirmedBy": [
+            "pq_official_html",
+            "giabac_vn_json",
+            "giabac_vn_html"
+          ],
+          "disagreement": null
+        },
+        "difference": {
+          "buyAbsolute": 0,
+          "buyPercent": 0.0,
+          "sellAbsolute": 0,
+          "sellPercent": 0.0,
+          "timestampDifferenceSeconds": 0,
+          "whichIsFresher": "equal"
+        }
+      },
+      "xagUsd": {
+        "legacy": {
+          "usdPerOz": 53.68,
+          "asOf": "2026-10-26T10:37:00-04:00",
+          "fetchedAt": "2026-10-26T14:38:40Z",
+          "source": "Kitco (giá bid)",
+          "freshFetchSucceeded": true,
+          "latencyMs": 95
+        },
+        "engine": {
+          "price": 53.9,
+          "sourceTimestamp": "2026-10-26T14:38:50Z",
+          "fetchedTimestamp": "2026-10-26T14:38:40Z",
+          "sourceName": "swissquote_bbo",
+          "adapter": "swissquote_bbo_json",
+          "latencyMs": 362,
+          "freshnessStatus": "LIVE",
+          "marketStatus": "MARKET_OPEN",
+          "usedLastKnownGood": false,
+          "confirmedBy": [
+            "yahoo_xag",
+            "kitco_silver",
+            "phuquy_world_json",
+            "giabac_world_json"
+          ],
+          "disagreement": null
+        },
+        "difference": {
+          "absolute": 0.22,
+          "percent": 0.4098,
+          "timestampDifferenceSeconds": 110,
+          "whichIsFresher": "engine"
+        }
+      },
+      "legacyErrors": [],
+      "backwardCompatibility": {
+        "allPassed": true,
+        "fieldChecks": {
+          "target": true,
+          "items": true,
+          "priceAsOf": true,
+          "itemsAsOf": true,
+          "source": true,
+          "world": true,
+          "history": true,
+          "worldHistory": true,
+          "fetchedAt": true,
+          "errors": true,
+          "additive_sourceHealth": true,
+          "additive_marketStatus": true,
+          "additive_freshnessStatus": true,
+          "additive_engineMetadata": true
+        }
+      },
+      "sourceHealth": {
+        "updatedAt": "2026-10-26T14:38:40Z",
+        "phuQuyMarketStatus": "MARKET_CLOSED_AFTER_HOURS",
+        "phuQuyFreshness": "MARKET_CLOSED",
+        "xagMarketStatus": "MARKET_OPEN",
+        "xagFreshness": "LIVE",
+        "disagreements": {
+          "phuQuy": null,
+          "xagUsd": null
+        },
+        "sources": {
+          "pq_official_ajax": {
+            "sourceName": "pq_official_ajax",
+            "adapter": "json_datetime+adapter_css_classes",
+            "currentlySelected": true,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 4047,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+          },
+          "pq_official_html": {
+            "sourceName": "pq_official_html",
+            "adapter": "adapter_css_classes",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1516,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "giabac_vn_json": {
+            "sourceName": "giabac_vn_json",
+            "adapter": "giabac_sql_chart_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1773,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T08:30:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "giabac_vn_html": {
+            "sourceName": "giabac_vn_html",
+            "adapter": "adapter_table_heuristic",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1979,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "swissquote_bbo": {
+            "sourceName": "swissquote_bbo",
+            "adapter": "swissquote_bbo_json",
+            "currentlySelected": true,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 362,
+            "lastValue": {
+              "usdPerOz": 53.9
+            },
+            "lastSourceTimestamp": "2026-10-26T14:38:50Z",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "LIVE",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Selected swissquote_bbo (53.9 USD/oz, status=LIVE, market=MARKET_OPEN)"
+          },
+          "yahoo_xag": {
+            "sourceName": "yahoo_xag",
+            "adapter": "yahoo_chart_v8_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 90,
+            "lastValue": {
+              "usdPerOz": 53.72
+            },
+            "lastSourceTimestamp": "2026-10-26T14:28:49Z",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "kitco_silver": {
+            "sourceName": "kitco_silver",
+            "adapter": "kitco_text_regex",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 180,
+            "lastValue": {
+              "usdPerOz": 53.7
+            },
+            "lastSourceTimestamp": "2026-10-26T10:38:00-04:00",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "phuquy_world_json": {
+            "sourceName": "phuquy_world_json",
+            "adapter": "dotnet_world_silver_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1505,
+            "lastValue": {
+              "usdPerOz": 53.95
+            },
+            "lastSourceTimestamp": "2026-10-26T14:36:30Z",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "giabac_world_json": {
+            "sourceName": "giabac_world_json",
+            "adapter": "dotnet_world_silver_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:38:40Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1475,
+            "lastValue": {
+              "usdPerOz": 53.95
+            },
+            "lastSourceTimestamp": "2026-10-26T14:38:28Z",
+            "lastFetchedTimestamp": "2026-10-26T14:38:40Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          }
+        }
+      }
+    },
+    {
+      "comparedAt": "2026-10-26T14:39:55Z",
+      "phuQuy": {
+        "legacy": {
+          "buy": 1764000,
+          "sell": 1819000,
+          "priceAsOf": "2026-10-26T18:24:00+07:00",
+          "fetchedAt": "2026-10-26T14:39:55Z",
+          "source": "phuquy",
+          "freshFetchSucceeded": true,
+          "latencyMs": 1518
+        },
+        "engine": {
+          "buy": 1764000,
+          "sell": 1819000,
+          "sourceTimestamp": "2026-10-26T18:24:00+07:00",
+          "fetchedTimestamp": "2026-10-26T14:39:55Z",
+          "sourceName": "pq_official_ajax",
+          "adapter": "json_datetime+adapter_css_classes",
+          "latencyMs": 14282,
+          "freshnessStatus": "MARKET_CLOSED",
+          "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+          "usedLastKnownGood": false,
+          "confirmedBy": [
+            "pq_official_html",
+            "giabac_vn_json",
+            "giabac_vn_html"
+          ],
+          "disagreement": null
+        },
+        "difference": {
+          "buyAbsolute": 0,
+          "buyPercent": 0.0,
+          "sellAbsolute": 0,
+          "sellPercent": 0.0,
+          "timestampDifferenceSeconds": 0,
+          "whichIsFresher": "equal"
+        }
+      },
+      "xagUsd": {
+        "legacy": {
+          "usdPerOz": 53.76,
+          "asOf": "2026-10-26T10:39:00-04:00",
+          "fetchedAt": "2026-10-26T14:39:55Z",
+          "source": "Kitco (giá bid)",
+          "freshFetchSucceeded": true,
+          "latencyMs": 183
+        },
+        "engine": {
+          "price": 53.92,
+          "sourceTimestamp": "2026-10-26T14:40:13Z",
+          "fetchedTimestamp": "2026-10-26T14:39:55Z",
+          "sourceName": "swissquote_bbo",
+          "adapter": "swissquote_bbo_json",
+          "latencyMs": 303,
+          "freshnessStatus": "LIVE",
+          "marketStatus": "MARKET_OPEN",
+          "usedLastKnownGood": false,
+          "confirmedBy": [
+            "yahoo_xag",
+            "kitco_silver",
+            "phuquy_world_json",
+            "giabac_world_json"
+          ],
+          "disagreement": null
+        },
+        "difference": {
+          "absolute": 0.16,
+          "percent": 0.2976,
+          "timestampDifferenceSeconds": 73,
+          "whichIsFresher": "engine"
+        }
+      },
+      "legacyErrors": [],
+      "backwardCompatibility": {
+        "allPassed": true,
+        "fieldChecks": {
+          "target": true,
+          "items": true,
+          "priceAsOf": true,
+          "itemsAsOf": true,
+          "source": true,
+          "world": true,
+          "history": true,
+          "worldHistory": true,
+          "fetchedAt": true,
+          "errors": true,
+          "additive_sourceHealth": true,
+          "additive_marketStatus": true,
+          "additive_freshnessStatus": true,
+          "additive_engineMetadata": true
+        }
+      },
+      "sourceHealth": {
+        "updatedAt": "2026-10-26T14:39:55Z",
+        "phuQuyMarketStatus": "MARKET_CLOSED_AFTER_HOURS",
+        "phuQuyFreshness": "MARKET_CLOSED",
+        "xagMarketStatus": "MARKET_OPEN",
+        "xagFreshness": "LIVE",
+        "disagreements": {
+          "phuQuy": null,
+          "xagUsd": null
+        },
+        "sources": {
+          "pq_official_ajax": {
+            "sourceName": "pq_official_ajax",
+            "adapter": "json_datetime+adapter_css_classes",
+            "currentlySelected": true,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 14282,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+          },
+          "pq_official_html": {
+            "sourceName": "pq_official_html",
+            "adapter": "adapter_css_classes",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1040,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "giabac_vn_json": {
+            "sourceName": "giabac_vn_json",
+            "adapter": "giabac_sql_chart_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 2104,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T08:30:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "giabac_vn_html": {
+            "sourceName": "giabac_vn_html",
+            "adapter": "adapter_table_heuristic",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1521,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "swissquote_bbo": {
+            "sourceName": "swissquote_bbo",
+            "adapter": "swissquote_bbo_json",
+            "currentlySelected": true,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 303,
+            "lastValue": {
+              "usdPerOz": 53.92
+            },
+            "lastSourceTimestamp": "2026-10-26T14:40:13Z",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "LIVE",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Selected swissquote_bbo (53.92 USD/oz, status=LIVE, market=MARKET_OPEN)"
+          },
+          "yahoo_xag": {
+            "sourceName": "yahoo_xag",
+            "adapter": "yahoo_chart_v8_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 103,
+            "lastValue": {
+              "usdPerOz": 53.74
+            },
+            "lastSourceTimestamp": "2026-10-26T14:30:13Z",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "kitco_silver": {
+            "sourceName": "kitco_silver",
+            "adapter": "kitco_text_regex",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 168,
+            "lastValue": {
+              "usdPerOz": 53.76
+            },
+            "lastSourceTimestamp": "2026-10-26T10:39:00-04:00",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "phuquy_world_json": {
+            "sourceName": "phuquy_world_json",
+            "adapter": "dotnet_world_silver_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1281,
+            "lastValue": {
+              "usdPerOz": 53.96
+            },
+            "lastSourceTimestamp": "2026-10-26T14:37:54Z",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "giabac_world_json": {
+            "sourceName": "giabac_world_json",
+            "adapter": "dotnet_world_silver_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:39:55Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1468,
+            "lastValue": {
+              "usdPerOz": 53.96
+            },
+            "lastSourceTimestamp": "2026-10-26T14:39:29Z",
+            "lastFetchedTimestamp": "2026-10-26T14:39:55Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          }
+        }
+      }
+    },
+    {
+      "comparedAt": "2026-10-26T14:41:18Z",
+      "phuQuy": {
+        "legacy": {
+          "buy": 1764000,
+          "sell": 1819000,
+          "priceAsOf": "2026-10-26T18:24:00+07:00",
+          "fetchedAt": "2026-10-26T14:41:18Z",
+          "source": "phuquy",
+          "freshFetchSucceeded": true,
+          "latencyMs": 1042
+        },
+        "engine": {
+          "buy": 1764000,
+          "sell": 1819000,
+          "sourceTimestamp": "2026-10-26T18:24:00+07:00",
+          "fetchedTimestamp": "2026-10-26T14:41:18Z",
+          "sourceName": "pq_official_ajax",
+          "adapter": "json_datetime+adapter_css_classes",
+          "latencyMs": 3926,
+          "freshnessStatus": "MARKET_CLOSED",
+          "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+          "usedLastKnownGood": false,
+          "confirmedBy": [
+            "pq_official_html",
+            "giabac_vn_json",
+            "giabac_vn_html"
+          ],
+          "disagreement": null
+        },
+        "difference": {
+          "buyAbsolute": 0,
+          "buyPercent": 0.0,
+          "sellAbsolute": 0,
+          "sellPercent": 0.0,
+          "timestampDifferenceSeconds": 0,
+          "whichIsFresher": "equal"
+        }
+      },
+      "xagUsd": {
+        "legacy": {
+          "usdPerOz": 53.81,
+          "asOf": "2026-10-26T10:40:00-04:00",
+          "fetchedAt": "2026-10-26T14:41:18Z",
+          "source": "Kitco (giá bid)",
+          "freshFetchSucceeded": true,
+          "latencyMs": 76
+        },
+        "engine": {
+          "price": 53.93,
+          "sourceTimestamp": "2026-10-26T14:41:26Z",
+          "fetchedTimestamp": "2026-10-26T14:41:18Z",
+          "sourceName": "swissquote_bbo",
+          "adapter": "swissquote_bbo_json",
+          "latencyMs": 357,
+          "freshnessStatus": "LIVE",
+          "marketStatus": "MARKET_OPEN",
+          "usedLastKnownGood": false,
+          "confirmedBy": [
+            "yahoo_xag",
+            "kitco_silver",
+            "phuquy_world_json",
+            "giabac_world_json"
+          ],
+          "disagreement": null
+        },
+        "difference": {
+          "absolute": 0.12,
+          "percent": 0.223,
+          "timestampDifferenceSeconds": 86,
+          "whichIsFresher": "engine"
+        }
+      },
+      "legacyErrors": [],
+      "backwardCompatibility": {
+        "allPassed": true,
+        "fieldChecks": {
+          "target": true,
+          "items": true,
+          "priceAsOf": true,
+          "itemsAsOf": true,
+          "source": true,
+          "world": true,
+          "history": true,
+          "worldHistory": true,
+          "fetchedAt": true,
+          "errors": true,
+          "additive_sourceHealth": true,
+          "additive_marketStatus": true,
+          "additive_freshnessStatus": true,
+          "additive_engineMetadata": true
+        }
+      },
+      "sourceHealth": {
+        "updatedAt": "2026-10-26T14:41:18Z",
+        "phuQuyMarketStatus": "MARKET_CLOSED_AFTER_HOURS",
+        "phuQuyFreshness": "MARKET_CLOSED",
+        "xagMarketStatus": "MARKET_OPEN",
+        "xagFreshness": "LIVE",
+        "disagreements": {
+          "phuQuy": null,
+          "xagUsd": null
+        },
+        "sources": {
+          "pq_official_ajax": {
+            "sourceName": "pq_official_ajax",
+            "adapter": "json_datetime+adapter_css_classes",
+            "currentlySelected": true,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 3926,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Selected pq_official_ajax via json_datetime+adapter_css_classes (status=MARKET_CLOSED, market=MARKET_CLOSED_AFTER_HOURS)"
+          },
+          "pq_official_html": {
+            "sourceName": "pq_official_html",
+            "adapter": "adapter_css_classes",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1040,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "giabac_vn_json": {
+            "sourceName": "giabac_vn_json",
+            "adapter": "giabac_sql_chart_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1767,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T08:30:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "giabac_vn_html": {
+            "sourceName": "giabac_vn_html",
+            "adapter": "adapter_table_heuristic",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1743,
+            "lastValue": {
+              "buy": 1764000,
+              "sell": 1819000
+            },
+            "lastSourceTimestamp": "2026-10-26T18:24:00+07:00",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "MARKET_CLOSED",
+            "marketStatus": "MARKET_CLOSED_AFTER_HOURS",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by higher-priority/fresher source pq_official_ajax"
+          },
+          "swissquote_bbo": {
+            "sourceName": "swissquote_bbo",
+            "adapter": "swissquote_bbo_json",
+            "currentlySelected": true,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 357,
+            "lastValue": {
+              "usdPerOz": 53.93
+            },
+            "lastSourceTimestamp": "2026-10-26T14:41:26Z",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "LIVE",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Selected swissquote_bbo (53.93 USD/oz, status=LIVE, market=MARKET_OPEN)"
+          },
+          "yahoo_xag": {
+            "sourceName": "yahoo_xag",
+            "adapter": "yahoo_chart_v8_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 98,
+            "lastValue": {
+              "usdPerOz": 53.73
+            },
+            "lastSourceTimestamp": "2026-10-26T14:31:25Z",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "kitco_silver": {
+            "sourceName": "kitco_silver",
+            "adapter": "kitco_text_regex",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 111,
+            "lastValue": {
+              "usdPerOz": 53.81
+            },
+            "lastSourceTimestamp": "2026-10-26T10:40:00-04:00",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "phuquy_world_json": {
+            "sourceName": "phuquy_world_json",
+            "adapter": "dotnet_world_silver_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1019,
+            "lastValue": {
+              "usdPerOz": 53.95
+            },
+            "lastSourceTimestamp": "2026-10-26T14:39:07Z",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          },
+          "giabac_world_json": {
+            "sourceName": "giabac_world_json",
+            "adapter": "dotnet_world_silver_json",
+            "currentlySelected": false,
+            "lastSuccess": "2026-10-26T14:41:18Z",
+            "lastFailure": null,
+            "consecutiveFailures": 0,
+            "lastLatencyMs": 1005,
+            "lastValue": {
+              "usdPerOz": 53.95
+            },
+            "lastSourceTimestamp": "2026-10-26T14:40:30Z",
+            "lastFetchedTimestamp": "2026-10-26T14:41:18Z",
+            "staleStatus": "FRESH",
+            "marketStatus": "MARKET_OPEN",
+            "failureReason": "NONE",
+            "lastError": null,
+            "whySelectedOrRejected": "Valid, but superseded by fresher/higher-priority source swissquote_bbo"
+          }
+        }
+      }
+    }
+  ]
+}
