@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-11-04T16:25:18Z",
+ "fetchedAt": "2026-11-05T00:57:02Z",
  "history": [
   {
    "at": "2026-11-03T12:36:00+07:00",
@@ -1243,18 +1243,14 @@
   "sell": 1629000
  },
  "world": {
-  "usdPerOz": 51.78,
+  "usdPerOz": 52.53,
   "changePct": 42.5,
-  "asOf": "2026-11-04T11:24:00-05:00",
+  "asOf": "2026-11-04T19:56:00-05:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 43134910,
+  "vndPerKg": 43759691,
   "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈25.910 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
-  {
-   "at": "2026-11-04T06:24:00-05:00",
-   "usd": 51.9
-  },
   {
    "at": "2026-11-04T06:25:00-05:00",
    "usd": 51.87
@@ -2210,7 +2206,13 @@
   {
    "at": "2026-11-04T11:24:00-05:00",
    "usd": 51.78
+  },
+  {
+   "at": "2026-11-04T19:56:00-05:00",
+   "usd": 52.53
   }
  ],
- "errors": []
+ "errors": [
+  "phuquy: URLError: <urlopen error [Errno -5] No address associated with hostname>"
+ ]
 }
