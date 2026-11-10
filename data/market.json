@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-11-10T11:55:22Z",
+ "fetchedAt": "2026-11-10T11:55:45Z",
  "history": [
   {
    "at": "2026-11-06T09:31:00+07:00",
@@ -1247,7 +1247,7 @@
   "changePct": 42.5,
   "asOf": "2026-11-10T06:55:00-05:00",
   "source": "Kitco (giá bid)",
-  "vndPerKg": 43251871,
+  "vndPerKg": 43245256,
   "note": "Quy đổi theo tỷ giá Phú Quý dùng cho giá tham chiếu (≈25.790 ₫/USD), trước thuế và phí nhập khẩu"
  },
  "worldHistory": [
