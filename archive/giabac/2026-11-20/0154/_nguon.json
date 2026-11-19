@@ -1,0 +1,36 @@
+{
+ "trang": "https://giabac.vn/",
+ "ngay": "2026-11-20",
+ "tep": [
+  {
+   "file": "01.json",
+   "url": "https://giabac.vn/SilverInfo/WorldSilverPrice?_=1795114492965",
+   "status": 200,
+   "bytes": 103
+  },
+  {
+   "file": "02.json",
+   "url": "https://giabac.vn/SilverInfo/ChartData?days=7&type=KG",
+   "status": 200,
+   "bytes": 39604
+  },
+  {
+   "file": "03.json",
+   "url": "https://giabac.vn/SilverInfo/ChartData?days=7&type=L",
+   "status": 200,
+   "bytes": 38240
+  },
+  {
+   "file": "04.json",
+   "url": "https://giabac.vn/SilverInfo/ChartData?days=365&type=L",
+   "status": 200,
+   "bytes": 41040
+  },
+  {
+   "file": "05.json",
+   "url": "https://giabac.vn/SilverInfo/ChartData?days=365&type=KG",
+   "status": 200,
+   "bytes": 42533
+  }
+ ]
+}
